@@ -23,6 +23,16 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterLanding;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterJumping;
+	
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterCrouch;
+	
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterUncrouch;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -30,14 +40,7 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	bool IsJumping;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	bool IsCrouching;
-
-	virtual void Landed(const FHitResult& Hit) override;
+	
 
 protected:
 	
@@ -73,6 +76,8 @@ protected:
 	
 
 public:
+	virtual void Landed(const FHitResult& Hit) override;
+	virtual void OnJumped_Implementation();
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/

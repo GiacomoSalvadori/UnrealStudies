@@ -118,29 +118,36 @@ void ATP_ThirdPersonCharacter::MoveRight(float Value)
 
 
 void ATP_ThirdPersonCharacter::JumpCharacter() {
-	bool can = CanJump();
-
-	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("can jump? "));
 	if (CanJump()) {
-		IsJumping = true;
 		Jump();
 		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("jumping"));
 	}
 }
 
 void ATP_ThirdPersonCharacter::StopJumpingCharacter() {
-	IsJumping = false;
+	StopJumping();
 }
 
 void ATP_ThirdPersonCharacter::CrouchCharacter() {
-	IsCrouching = true;
+	if (CanCrouch()) {
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Crouch in"));
+		Crouch();
+		OnCharacterCrouch.Broadcast();
+	}
 }
 
 void ATP_ThirdPersonCharacter::StopCrouchCharcter() {
-	IsCrouching = false;
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Uncrouch"));
+	UnCrouch();
+	OnCharacterUncrouch.Broadcast();
 }
 
 void ATP_ThirdPersonCharacter::Landed(const FHitResult& Hit) {
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("landed"));
 	OnCharacterLanding.Broadcast();
+}
+
+void ATP_ThirdPersonCharacter::OnJumped_Implementation() {
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("On jumped"));
+	OnCharacterJumping.Broadcast();
 }
