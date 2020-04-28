@@ -4,7 +4,9 @@
 
 #include "Engine.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "TP_ThirdPersonCharacter.generated.h"
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameStateCharacter);
 UCLASS(config=Game)
 class ATP_ThirdPersonCharacter : public ACharacter
@@ -18,6 +20,7 @@ class ATP_ThirdPersonCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
 public:
 	ATP_ThirdPersonCharacter();
 
@@ -41,6 +44,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 	
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* MovementCurve;
+
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveVector* OffsetCurve;
+
+private:
+	FTimeline AimTimeline;
+
+	UFUNCTION()
+	void HandleProgressArmLength(float Length);
+	
+	UFUNCTION()
+	void HandleProgressCameraOffset(FVector Offset);
 
 protected:
 	
@@ -49,6 +66,9 @@ protected:
 
 	void CrouchCharacter();
 	void StopCrouchCharcter();
+
+	void AimIn();
+	void AimOut();
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -78,6 +98,11 @@ protected:
 public:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void OnJumped_Implementation();
+
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/

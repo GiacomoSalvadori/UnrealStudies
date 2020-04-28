@@ -37,14 +37,41 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
+	
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+}
+
+void ATP_ThirdPersonCharacter::BeginPlay() {
+	Super::BeginPlay();
+
+	if (MovementCurve && OffsetCurve) {
+		GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("On begin bind ufucntion"));
+		FOnTimelineFloat ProgressFunctionLength;
+		ProgressFunctionLength.BindUFunction(this, "HandleProgressArmLength");
+		AimTimeline.AddInterpFloat(MovementCurve, ProgressFunctionLength);
+
+		FOnTimelineVector ProgressFunctionOffset;
+		ProgressFunctionOffset.BindUFunction(this, "HandleProgressCameraOffset");
+		AimTimeline.AddInterpVector(OffsetCurve, ProgressFunctionOffset);
+
+	}
+}
+
+void ATP_ThirdPersonCharacter::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
+	AimTimeline.TickTimeline(DeltaTime);
+}
+
+void ATP_ThirdPersonCharacter::HandleProgressArmLength(float Length) {
+	CameraBoom->TargetArmLength = Length;
+}
+
+void ATP_ThirdPersonCharacter::HandleProgressCameraOffset(FVector Offset) {
+	CameraBoom->SocketOffset = Offset;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,6 +86,9 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATP_ThirdPersonCharacter::CrouchCharacter);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATP_ThirdPersonCharacter::StopCrouchCharcter);
+	
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimIn);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOut);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATP_ThirdPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATP_ThirdPersonCharacter::MoveRight);
@@ -74,6 +104,19 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 }
 
+void ATP_ThirdPersonCharacter::AimIn(){
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim In"));
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	AimTimeline.Play();
+}
+
+void ATP_ThirdPersonCharacter::AimOut(){
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim Out"));
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	AimTimeline.Reverse();
+}
 
 void ATP_ThirdPersonCharacter::TurnAtRate(float Rate)
 {
