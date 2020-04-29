@@ -50,6 +50,7 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 
 	if (MovementCurve && OffsetCurve) {
 		GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("On begin bind ufucntion"));
+
 		FOnTimelineFloat ProgressFunctionLength;
 		ProgressFunctionLength.BindUFunction(this, "HandleProgressArmLength");
 		AimTimeline.AddInterpFloat(MovementCurve, ProgressFunctionLength);
@@ -109,6 +110,7 @@ void ATP_ThirdPersonCharacter::AimIn(){
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	AimTimeline.Play();
+	OnCharacterAim.Broadcast();
 }
 
 void ATP_ThirdPersonCharacter::AimOut(){
@@ -116,6 +118,7 @@ void ATP_ThirdPersonCharacter::AimOut(){
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	AimTimeline.Reverse();
+	OnCharacterStopAim.Broadcast();
 }
 
 void ATP_ThirdPersonCharacter::TurnAtRate(float Rate)

@@ -36,6 +36,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterUncrouch;
 
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterAim;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterStopAim;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
