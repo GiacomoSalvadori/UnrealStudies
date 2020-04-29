@@ -43,11 +43,17 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	//Create a child actor component
+	WeaponComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponComponent"));
+	WeaponComponent->SetupAttachment(RootComponent);
+	//WeaponComponent->ChildActorClass = AWeapon::StaticClass();
+	//ChildActor->CreateChildActor();
 }
 
 void ATP_ThirdPersonCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	MaxSpeedWalkingOrig = GetCharacterMovement()->MaxWalkSpeed;
 	if (MovementCurve && OffsetCurve) {
 		GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("On begin bind ufucntion"));
 
@@ -109,6 +115,7 @@ void ATP_ThirdPersonCharacter::AimIn(){
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim In"));
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedAiming;
 	AimTimeline.Play();
 	OnCharacterAim.Broadcast();
 }
@@ -117,6 +124,7 @@ void ATP_ThirdPersonCharacter::AimOut(){
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim Out"));
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalkingOrig;
 	AimTimeline.Reverse();
 	OnCharacterStopAim.Broadcast();
 }

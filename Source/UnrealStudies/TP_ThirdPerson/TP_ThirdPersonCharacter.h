@@ -21,6 +21,9 @@ class ATP_ThirdPersonCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UChildActorComponent* WeaponComponent;
+
 public:
 	ATP_ThirdPersonCharacter();
 
@@ -50,6 +53,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
 	
+	/** Walk speed while aiming. */
+	UPROPERTY(EditAnywhere, Category = "Aim")
+	float MaxSpeedAiming = 150.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* MovementCurve;
 
@@ -57,6 +64,8 @@ public:
 	UCurveVector* OffsetCurve;
 
 private:
+	float MaxSpeedWalkingOrig;
+
 	FTimeline AimTimeline;
 
 	UFUNCTION()
