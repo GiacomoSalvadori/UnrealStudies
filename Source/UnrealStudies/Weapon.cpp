@@ -14,13 +14,27 @@ AWeapon::AWeapon()
 	SphereComponent->InitSphereRadius(40.0f);
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(RootComponent);
+	
 
+	/*
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> WeaponVisualAsset(TEXT("/Game/FPS_Weapon_Bundle/Weapons/Meshes/AR4/SM_AR4_X.SM_AR4_X"));
+	if (WeaponVisualAsset.Succeeded())
+	{
+		WeaponMesh->SetStaticMesh(WeaponVisualAsset.Object);
+		//WeaponMesh->SetRelativeLocation(FVector(0.0f, 0.0f, -40.0f));
+		//WeaponMesh->SetWorldScale3D(FVector(0.8f));
+	}
+	*/
 }
 
 // Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	
+}
+
+void AWeapon::OnConstruction(const FTransform & Transform){
 	
 }
 

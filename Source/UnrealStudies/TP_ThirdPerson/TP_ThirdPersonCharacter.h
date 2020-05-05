@@ -3,6 +3,10 @@
 #pragma once
 
 #include "Engine.h"
+#include "Engine/EngineTypes.h"
+#include "../Weapon.h"
+#include "../WeaponSlot.h"
+#include "../Enemy.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TP_ThirdPersonCharacter.generated.h"
@@ -23,6 +27,9 @@ class ATP_ThirdPersonCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UChildActorComponent* WeaponComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* WeaponMesh;
 
 public:
 	ATP_ThirdPersonCharacter();
@@ -62,11 +69,23 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveVector* OffsetCurve;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	TArray<FWeaponSlot> Arsenal;
+	//TArray<TSubclassOf<AWeapon>> Arsenal;
+	//TArray<class AWeapon*> Arsenal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	UParticleSystem* HitEFX;
 
 private:
+	int ActiveWeapon;
+
 	float MaxSpeedWalkingOrig;
 
 	FTimeline AimTimeline;
+
+	AWeapon *CurrentWeapon;
 
 	UFUNCTION()
 	void HandleProgressArmLength(float Length);
@@ -103,6 +122,7 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
 	// APawn interface
@@ -117,6 +137,8 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	void Fire();
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

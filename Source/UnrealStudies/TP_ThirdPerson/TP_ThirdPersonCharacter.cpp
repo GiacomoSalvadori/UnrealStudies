@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 
+
 //////////////////////////////////////////////////////////////////////////
 // ATP_ThirdPersonCharacter
 
@@ -42,16 +43,28 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
+	
 	//Create a child actor component
-	WeaponComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponComponent"));
-	WeaponComponent->SetupAttachment(RootComponent);
-	//WeaponComponent->ChildActorClass = AWeapon::StaticClass();
-	//ChildActor->CreateChildActor();
+	//WeaponComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponComponent"));
+	//WeaponComponent->SetupAttachment(RootComponent);
+	//UWorld* w = GetWorld();
+	
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
+
+	ActiveWeapon = 0;
 }
 
 void ATP_ThirdPersonCharacter::BeginPlay() {
 	Super::BeginPlay();
+
+	FVector WeaponLocation = GetMesh()->GetSocketLocation("hand_rSocket");
+	FRotator WeaponRotaion = GetMesh()->GetSocketRotation("hand_rSocket");
+	FActorSpawnParameters SpawnParams;
+	//AWeapon* WeaponObj = GetWorld()->SpawnActor<AWeapon>(AWeapon::StaticClass(), WeaponLocation, WeaponRotaion, SpawnParams);
+	//WeaponObj->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, "hand_rSocket");
+	//WeaponObj->Attachpa(GetMesh(), WeaponLocation);
+	
 
 	MaxSpeedWalkingOrig = GetCharacterMovement()->MaxWalkSpeed;
 	if (MovementCurve && OffsetCurve) {
@@ -67,6 +80,33 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 
 	}
 }
+
+void ATP_ThirdPersonCharacter::OnConstruction(const FTransform & Transform)
+{
+	/*
+	WeaponComponent = NewObject<UChildActorComponent>(this);
+	//UChildActorComponent* NewComp1 = NewObject<UChildActorComponent>(this);
+
+	WeaponComponent->bEditableWhenInherited = true;
+	//WeaponComponent->SetupAttachment(GetMesh(), "hand_rSocket");
+	WeaponComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
+	WeaponComponent->RegisterComponent();
+	if (Arsenal.Num() > 0) {
+		WeaponComponent->SetChildActorClass(Arsenal[0]);
+		
+	} else {
+		WeaponComponent->SetChildActorClass(AWeapon::StaticClass());
+	}
+	
+	WeaponComponent->CreateChildActor();
+
+	*/
+
+	if (Arsenal.Num() > 0) {
+		WeaponMesh->SetStaticMesh(Arsenal[0].WeaponMesh);
+	}
+}
+
 
 void ATP_ThirdPersonCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
@@ -96,6 +136,8 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimIn);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOut);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATP_ThirdPersonCharacter::Fire);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATP_ThirdPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATP_ThirdPersonCharacter::MoveRight);
@@ -140,6 +182,7 @@ void ATP_ThirdPersonCharacter::LookUpAtRate(float Rate)
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
+
 
 void ATP_ThirdPersonCharacter::MoveForward(float Value)
 {
@@ -204,4 +247,40 @@ void ATP_ThirdPersonCharacter::Landed(const FHitResult& Hit) {
 void ATP_ThirdPersonCharacter::OnJumped_Implementation() {
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("On jumped"));
 	OnCharacterJumping.Broadcast();
+}
+
+void ATP_ThirdPersonCharacter::Fire() {
+	
+	// You can use this to customize various properties about the trace
+	FCollisionQueryParams Params;
+	// Ignore the player's pawn
+	Params.AddIgnoredActor(this->GetParentActor());
+
+	// The hit result gets populated by the line trace
+	FHitResult Hit;
+
+	// Raycast out from the camera, only collide with pawns (they are on the ECC_Pawn collision channel)
+	FVector Start = FollowCamera->GetComponentLocation();
+
+	float WeaponRange = Arsenal[ActiveWeapon].Range;
+
+	FVector End = Start + (FollowCamera->GetComponentRotation().Vector() * WeaponRange);
+	//bool bHit = GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
+
+
+	if (bHit)
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 3.0f);
+		
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEFX, Hit.ImpactPoint);
+		AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
+		
+		if (HitActor) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cast do it! "+ HitActor->GetName()));
+			HitActor->Destroy();
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cast failed!"));
+		}
+	}
 }
