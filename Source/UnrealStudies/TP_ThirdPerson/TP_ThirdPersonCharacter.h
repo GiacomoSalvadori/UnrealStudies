@@ -7,6 +7,7 @@
 #include "../Weapon.h"
 #include "../WeaponSlot.h"
 #include "../Enemy.h"
+#include "../CoverActor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TP_ThirdPersonCharacter.generated.h"
@@ -64,11 +65,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Aim")
 	float MaxSpeedAiming = 150.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Aim")
+	float ActualEight = 0.0f;
+
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* MovementCurve;
 
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveVector* OffsetCurve;
+
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* CrouchCurve;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
 	TArray<FWeaponSlot> Arsenal;
@@ -83,15 +90,28 @@ private:
 
 	float MaxSpeedWalkingOrig;
 
+	bool IsAiming;
+
 	FTimeline AimTimeline;
 
-	AWeapon *CurrentWeapon;
+	FTimeline CrouchTimeline;
+	
+	bool bCanTakeCover = false;
+	
+	bool bIsInCover = false;
+	
+	FVector CoverDirectionMovement;
+
+	ACoverActor* Cover;
 
 	UFUNCTION()
 	void HandleProgressArmLength(float Length);
 	
 	UFUNCTION()
 	void HandleProgressCameraOffset(FVector Offset);
+
+	UFUNCTION()
+	void HandleProgressCrouch(float Height);
 
 protected:
 	
@@ -124,7 +144,6 @@ protected:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
@@ -138,7 +157,14 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	/** Called when the player try to fire with weapon */
 	void Fire();
+
+	/**Enables or disables the cover mode*/
+	void ToggleCover();
+
+	/** Inform the player that he's able to take cover in the provided actor */
+	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

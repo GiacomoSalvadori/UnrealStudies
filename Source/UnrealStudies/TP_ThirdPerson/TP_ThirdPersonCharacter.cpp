@@ -32,6 +32,8 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+	GetCharacterMovement()->CrouchedHalfHeight = 52.0f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -49,10 +51,14 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	//WeaponComponent->SetupAttachment(RootComponent);
 	//UWorld* w = GetWorld();
 	
+	// Add a mesh for the weapon
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
-
+	
+	//Set active weapon index
 	ActiveWeapon = 0;
+	ActualEight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	IsAiming = false;
 }
 
 void ATP_ThirdPersonCharacter::BeginPlay() {
@@ -64,12 +70,9 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 	//AWeapon* WeaponObj = GetWorld()->SpawnActor<AWeapon>(AWeapon::StaticClass(), WeaponLocation, WeaponRotaion, SpawnParams);
 	//WeaponObj->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, "hand_rSocket");
 	//WeaponObj->Attachpa(GetMesh(), WeaponLocation);
-	
 
 	MaxSpeedWalkingOrig = GetCharacterMovement()->MaxWalkSpeed;
 	if (MovementCurve && OffsetCurve) {
-		GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("On begin bind ufucntion"));
-
 		FOnTimelineFloat ProgressFunctionLength;
 		ProgressFunctionLength.BindUFunction(this, "HandleProgressArmLength");
 		AimTimeline.AddInterpFloat(MovementCurve, ProgressFunctionLength);
@@ -78,6 +81,12 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 		ProgressFunctionOffset.BindUFunction(this, "HandleProgressCameraOffset");
 		AimTimeline.AddInterpVector(OffsetCurve, ProgressFunctionOffset);
 
+	}
+
+	if (CrouchCurve) {
+		FOnTimelineFloat ProgressFunctionCrouch;
+		ProgressFunctionCrouch.BindUFunction(this, "HandleProgressCrouch");
+		CrouchTimeline.AddInterpFloat(CrouchCurve, ProgressFunctionCrouch);
 	}
 }
 
@@ -111,6 +120,7 @@ void ATP_ThirdPersonCharacter::OnConstruction(const FTransform & Transform)
 void ATP_ThirdPersonCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 	AimTimeline.TickTimeline(DeltaTime);
+	CrouchTimeline.TickTimeline(DeltaTime);
 }
 
 void ATP_ThirdPersonCharacter::HandleProgressArmLength(float Length) {
@@ -119,6 +129,10 @@ void ATP_ThirdPersonCharacter::HandleProgressArmLength(float Length) {
 
 void ATP_ThirdPersonCharacter::HandleProgressCameraOffset(FVector Offset) {
 	CameraBoom->SocketOffset = Offset;
+}
+
+void ATP_ThirdPersonCharacter::HandleProgressCrouch(float Height) {
+	ActualEight = Height;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,6 +153,8 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATP_ThirdPersonCharacter::Fire);
 
+	PlayerInputComponent->BindAction("Cover", IE_Pressed, this, &ATP_ThirdPersonCharacter::ToggleCover);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATP_ThirdPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATP_ThirdPersonCharacter::MoveRight);
 
@@ -158,6 +174,7 @@ void ATP_ThirdPersonCharacter::AimIn(){
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedAiming;
+	IsAiming = true;
 	AimTimeline.Play();
 	OnCharacterAim.Broadcast();
 }
@@ -167,6 +184,7 @@ void ATP_ThirdPersonCharacter::AimOut(){
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalkingOrig;
+	IsAiming = false;
 	AimTimeline.Reverse();
 	OnCharacterStopAim.Broadcast();
 }
@@ -186,7 +204,7 @@ void ATP_ThirdPersonCharacter::LookUpAtRate(float Rate)
 
 void ATP_ThirdPersonCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if ((Controller != NULL) && (Value != 0.0f) & !bIsInCover)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -202,14 +220,19 @@ void ATP_ThirdPersonCharacter::MoveRight(float Value)
 {
 	if ( (Controller != NULL) && (Value != 0.0f) )
 	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
+		if (!bIsInCover) {
+			// find out which way is right
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+			// get right vector 
+			const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+			// add movement in that direction
+			AddMovementInput(Direction, Value);
+		} else {
+			//Move according to the cover actor's position
+			AddMovementInput(CoverDirectionMovement, Value);
+		}
 	}
 }
 
@@ -226,17 +249,22 @@ void ATP_ThirdPersonCharacter::StopJumpingCharacter() {
 }
 
 void ATP_ThirdPersonCharacter::CrouchCharacter() {
+	
 	if (CanCrouch()) {
 		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Crouch in"));
 		Crouch();
+		CrouchTimeline.Play();
 		OnCharacterCrouch.Broadcast();
 	}
 }
 
 void ATP_ThirdPersonCharacter::StopCrouchCharcter() {
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Uncrouch"));
-	UnCrouch();
-	OnCharacterUncrouch.Broadcast();
+	if (GetCharacterMovement()->IsCrouching()) {
+		UnCrouch();
+		CrouchTimeline.Reverse();
+		OnCharacterUncrouch.Broadcast();
+	}
 }
 
 void ATP_ThirdPersonCharacter::Landed(const FHitResult& Hit) {
@@ -259,12 +287,16 @@ void ATP_ThirdPersonCharacter::Fire() {
 	// The hit result gets populated by the line trace
 	FHitResult Hit;
 
-	// Raycast out from the camera, only collide with pawns (they are on the ECC_Pawn collision channel)
-	FVector Start = FollowCamera->GetComponentLocation();
-
 	float WeaponRange = Arsenal[ActiveWeapon].Range;
 
+	FVector Start = FollowCamera->GetComponentLocation();
 	FVector End = Start + (FollowCamera->GetComponentRotation().Vector() * WeaponRange);
+
+	if (!IsAiming) {
+		Start = FollowCamera->GetComponentLocation();
+		End = Start + (FollowCamera->GetComponentRotation().Vector() * WeaponRange);
+	}
+	
 	//bool bHit = GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
@@ -281,6 +313,42 @@ void ATP_ThirdPersonCharacter::Fire() {
 			HitActor->Destroy();
 		} else {
 			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cast failed!"));
+		}
+	}
+}
+
+void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* CoverActor)
+{
+	if (!CanTakeCover && bIsInCover) {
+		ToggleCover();
+	}
+
+	bCanTakeCover = CanTakeCover;
+	Cover = CoverActor;
+}
+
+void ATP_ThirdPersonCharacter::ToggleCover()
+{
+	if (GetCharacterMovement()->IsCrouching() && bCanTakeCover) {
+		bIsInCover = !bIsInCover;
+		if (bIsInCover) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cover!"));
+		} else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Not Cover!"));
+		}
+		
+		if (bIsInCover && Cover) {
+			//This is done because my downloaded animations do not require an orientation to movement
+			//Depending on your animation you may (or not) need this
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+
+			FRotator CoverRotation;
+			Cover->RetrieveMovementDirectionAndFacingRotation(CoverDirectionMovement, CoverRotation);
+			SetActorRotation(CoverRotation);
+		} else {
+			//This is done because my downloaded animations do not require an orientation to movement
+			//Depending on your animation you may (or not) need this
+			GetCharacterMovement()->bOrientRotationToMovement = true;
 		}
 	}
 }

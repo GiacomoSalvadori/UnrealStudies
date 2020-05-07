@@ -20,5 +20,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Range;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector Offset;
+
 	FWeaponSlot();
 };
