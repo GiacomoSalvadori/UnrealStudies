@@ -22,7 +22,7 @@ private:
 	void OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	/** Returns true if the socket is close to the player */
-	bool IsCloseToPlayer(FName SocketName);
+	float DistanceFromPlayer(FName SocketName);
 
 	/** Determines the movement direction and the facing direction of the player */
 	void DetermineMovementDirection(FVector& MovementDirection, FRotator& FacingDirection);
@@ -39,6 +39,9 @@ protected:
 public:
 	// Sets default values for this actor's properties
 	ACoverActor();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offset")
+	FVector BoxCompOffset = FVector(50.0f, 50.0f, 0.0f);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

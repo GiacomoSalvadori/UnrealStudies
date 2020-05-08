@@ -3,6 +3,7 @@
 
 #include "CoverActor.h"
 #include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
+#include "Math/Vector.h"
 
 void ACoverActor::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -25,8 +26,9 @@ void ACoverActor::OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 	}
 }
 
-bool ACoverActor::IsCloseToPlayer(FName SocketName)
+float ACoverActor::DistanceFromPlayer(FName SocketName)
 {
+	/*
 	//Perform a raycast in order to determine if the player is 
 	//near the given socket
 	TArray<FHitResult> HitResults;
@@ -47,6 +49,13 @@ bool ACoverActor::IsCloseToPlayer(FName SocketName)
 		AActor* HitActor = hitResult.GetActor();
 		return HitActor && HitActor->IsA<ATP_ThirdPersonCharacter>();
 	});
+	*/
+
+	FVector SocketLocation = SM->GetSocketLocation(SocketName);
+	FVector PlayerLocation = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation();
+	float distance = FVector::Distance(SocketLocation, PlayerLocation);
+
+	return distance;
 }
 
 FName ACoverActor::GetNearbySocket()
@@ -59,14 +68,19 @@ FName ACoverActor::GetNearbySocket()
 		FName("LeftSocket")
 	};
 
+	FName NearestSocket = AvailableSockets[0];
+	float MinDistance = 10000.0f;
 	//Find the socket that is close to the character
-	for (uint8 SocketPtr = 0; SocketPtr < 4; SocketPtr++)
-	{
-		if (IsCloseToPlayer(AvailableSockets[SocketPtr])) return AvailableSockets[SocketPtr];
+	for (uint8 SocketPtr = 0; SocketPtr < 4; SocketPtr++) {
+		float Distance = DistanceFromPlayer(AvailableSockets[SocketPtr]);
+		if (Distance < MinDistance) {
+			NearestSocket = AvailableSockets[SocketPtr];
+			MinDistance = Distance;
+		}
 	}
 
 	//If something goes terribly wrong we're going to get the forward wall
-	return AvailableSockets[0];
+	return NearestSocket;
 }
 
 void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotator& FacingDirection)
@@ -77,22 +91,23 @@ void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotato
 	//Determine the movement and facing direction of the player, based on the described logic
 	//The way that we're deciding the facing direction is similar to the way we've decided
 	//the movement direction
+	FRotator FacingRot = GetActorRotation();
 	if (NearbySocket.IsEqual("ForwardSocket")) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket forward"));
 		MovementDirection = -GetActorRightVector();
-		FacingDirection = GetActorRotation();
+		FacingDirection = FacingRot + FRotator(0, 180, 0);;
 	} else if (NearbySocket.IsEqual("BackwardSocket")) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket backward"));
 		MovementDirection = GetActorRightVector();
-		FacingDirection = GetActorRotation() + FRotator(0, 180, 0);
+		FacingDirection = FacingRot + FRotator(0, 0, 0);
 	} else if (NearbySocket.IsEqual("RightSocket")) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket right"));
 		MovementDirection = GetActorForwardVector();
-		FacingDirection = GetActorRotation() + FRotator(0, 90, 0);
-	} else {
+		FacingDirection = FacingRot + FRotator(0, -90, 0);
+	} else { //LeftSocket
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket left"));
 		MovementDirection = -GetActorForwardVector();
-		FacingDirection = GetActorRotation() + FRotator(0, -90.f, 0);
+		FacingDirection = FacingRot + FRotator(0, 90.f, 0);
 	}
 }
 
@@ -120,6 +135,16 @@ void ACoverActor::BeginPlay()
 		//Register overlap events
 		BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACoverActor::OnCompBeginOverlap);
 		BoxComp->OnComponentEndOverlap.AddDynamic(this, &ACoverActor::OnCompEndOverlap);
+		FVector BoxExtent = BoxComp->GetScaledBoxExtent();
+		GEngine->AddOnScreenDebugMessage(-12, 20.0f, FColor::Purple, FString::Printf(TEXT("Dim: %f - %f - %f"), BoxExtent.X, BoxExtent.Y, BoxExtent.Z));
+		FVector ActorMeshScale = SM->GetComponentScale();
+		BoxExtent /= ActorMeshScale;
+		BoxExtent.X += BoxCompOffset.X / ActorMeshScale.X;
+		BoxExtent.Y += BoxCompOffset.Y / ActorMeshScale.Y;
+		BoxExtent.Z += BoxCompOffset.Z / ActorMeshScale.Z;
+		
+		GEngine->AddOnScreenDebugMessage(-10, 20.0f, FColor::Purple, FString::Printf(TEXT("Dim: %f - %f - %f"), BoxExtent.X, BoxExtent.Y, BoxExtent.Z));
+		BoxComp->SetBoxExtent(BoxExtent);
 	}
 }
 

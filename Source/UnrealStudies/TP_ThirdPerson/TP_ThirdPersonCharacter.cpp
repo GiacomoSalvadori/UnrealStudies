@@ -144,10 +144,10 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ATP_ThirdPersonCharacter::JumpCharacter);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ATP_ThirdPersonCharacter::StopJumpingCharacter);
-	
+	/*
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATP_ThirdPersonCharacter::CrouchCharacter);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATP_ThirdPersonCharacter::StopCrouchCharcter);
-	
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATP_ThirdPersonCharacter::StopCrouchCharacter);
+	*/
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimIn);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOut);
 
@@ -175,6 +175,10 @@ void ATP_ThirdPersonCharacter::AimIn(){
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedAiming;
 	IsAiming = true;
+	if (bIsInCover) {
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim from cover"));
+		StopCrouchCharacter();
+	}
 	AimTimeline.Play();
 	OnCharacterAim.Broadcast();
 }
@@ -185,6 +189,10 @@ void ATP_ThirdPersonCharacter::AimOut(){
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalkingOrig;
 	IsAiming = false;
+	if (bIsInCover) {
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Stop aim from cover"));
+		CrouchCharacter();
+	}
 	AimTimeline.Reverse();
 	OnCharacterStopAim.Broadcast();
 }
@@ -258,7 +266,7 @@ void ATP_ThirdPersonCharacter::CrouchCharacter() {
 	}
 }
 
-void ATP_ThirdPersonCharacter::StopCrouchCharcter() {
+void ATP_ThirdPersonCharacter::StopCrouchCharacter() {
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Uncrouch"));
 	if (GetCharacterMovement()->IsCrouching()) {
 		UnCrouch();
@@ -329,12 +337,13 @@ void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* C
 
 void ATP_ThirdPersonCharacter::ToggleCover()
 {
-	if (GetCharacterMovement()->IsCrouching() && bCanTakeCover) {
+	if (bCanTakeCover) {
 		bIsInCover = !bIsInCover;
+		// DEBUG message
 		if (bIsInCover) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cover!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Cover!"));
 		} else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Not Cover!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover!"));
 		}
 		
 		if (bIsInCover && Cover) {
@@ -345,10 +354,12 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 			FRotator CoverRotation;
 			Cover->RetrieveMovementDirectionAndFacingRotation(CoverDirectionMovement, CoverRotation);
 			SetActorRotation(CoverRotation);
+			CrouchCharacter();
 		} else {
 			//This is done because my downloaded animations do not require an orientation to movement
 			//Depending on your animation you may (or not) need this
 			GetCharacterMovement()->bOrientRotationToMovement = true;
+			StopCrouchCharacter();
 		}
 	}
 }

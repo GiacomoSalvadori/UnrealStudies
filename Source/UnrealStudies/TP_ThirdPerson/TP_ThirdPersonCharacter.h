@@ -119,7 +119,7 @@ protected:
 	void StopJumpingCharacter();
 
 	void CrouchCharacter();
-	void StopCrouchCharcter();
+	void StopCrouchCharacter();
 
 	void AimIn();
 	void AimOut();
