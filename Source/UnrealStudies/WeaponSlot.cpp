@@ -7,6 +7,7 @@
 FWeaponSlot::FWeaponSlot()
 {
 	this->WeaponMesh = NULL;
+	this->Damage = 20.0f;
 	this->Range = 10000.0f;
 	this->HitRadius = 50.0f;
 	this->Offset = 55.0f;

@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FWeaponSlot WeaponSlot;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -38,4 +41,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void FireWithSphereSweep();
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 };

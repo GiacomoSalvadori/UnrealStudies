@@ -18,6 +18,9 @@ public:
 	UStaticMesh *WeaponMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Range;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

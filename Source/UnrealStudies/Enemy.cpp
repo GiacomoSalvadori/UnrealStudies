@@ -21,6 +21,8 @@ AEnemy::AEnemy()
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
 
+	// Add Health manager
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 }
 
 // Called when the game starts or when spawned
@@ -96,6 +98,7 @@ void AEnemy::FireWithSphereSweep() {
 		//HitPlayer->GetClass()->ImplementsInterface
 		if (HitPlayer) {
 			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("Hit! Player"));
+			HitPlayer->GetHealthComponent()->GetDamage(WeaponSlot.Damage);
 		} else {
 			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("Hit! " + Hit.Actor.Get()->GetName()));
 		}

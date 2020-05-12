@@ -56,7 +56,10 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
 	
 	// Add Stimuli Source
-	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));	
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));
+
+	//Add component for Health management
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 
 	//Set active weapon index
 	ActiveWeapon = 0;
@@ -320,6 +323,7 @@ void ATP_ThirdPersonCharacter::Fire() {
 		
 		if (HitActor) {
 			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! "+ HitActor->GetName()));
+			HitActor->GetHealthComponent()->GetDamage(Arsenal[ActiveWeapon].Damage);
 			HitActor->Destroy();
 		}
 	}

@@ -8,6 +8,7 @@
 #include "../WeaponSlot.h"
 #include "../Enemy.h"
 #include "../CoverActor.h"
+#include "../HealthComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "GameFramework/Character.h"
@@ -22,20 +23,23 @@ class ATP_ThirdPersonCharacter : public ACharacter
 	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UChildActorComponent* WeaponComponent;
+	UChildActorComponent* WeaponComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* WeaponMesh;
+	UStaticMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stimuli Source", meta = (AllowPrivateAccess = "true"))
-	class UAIPerceptionStimuliSourceComponent* StimuliSource;
+	UAIPerceptionStimuliSourceComponent* StimuliSource;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
 
 public:
 	ATP_ThirdPersonCharacter();
@@ -168,6 +172,9 @@ public:
 
 	/** Inform the player that he's able to take cover in the provided actor */
 	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
