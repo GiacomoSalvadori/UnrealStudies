@@ -8,6 +8,8 @@
 #include "../WeaponSlot.h"
 #include "../Enemy.h"
 #include "../CoverActor.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TP_ThirdPersonCharacter.generated.h"
@@ -31,6 +33,9 @@ class ATP_ThirdPersonCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stimuli Source", meta = (AllowPrivateAccess = "true"))
+	class UAIPerceptionStimuliSourceComponent* StimuliSource;
 
 public:
 	ATP_ThirdPersonCharacter();
@@ -81,9 +86,7 @@ public:
 	TArray<FWeaponSlot> Arsenal;
 	//TArray<TSubclassOf<AWeapon>> Arsenal;
 	//TArray<class AWeapon*> Arsenal;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
-	UParticleSystem* HitEFX;
+	
 
 private:
 	int ActiveWeapon;

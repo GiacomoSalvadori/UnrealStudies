@@ -21,7 +21,13 @@ public:
 	float Range;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector Offset;
+	float HitRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Offset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystem* HitEFX;
 
 	FWeaponSlot();
 };

@@ -29,7 +29,7 @@ private:
 
 	/** Returns the name of the nearby socket */
 	FName GetNearbySocket();
-
+	
 protected:
 
 	/** The box component that informs the player if he's able to take cover or not */

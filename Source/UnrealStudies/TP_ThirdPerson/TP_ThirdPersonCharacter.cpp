@@ -55,6 +55,9 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
 	
+	// Add Stimuli Source
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuli Source"));	
+
 	//Set active weapon index
 	ActiveWeapon = 0;
 	ActualEight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -212,8 +215,7 @@ void ATP_ThirdPersonCharacter::LookUpAtRate(float Rate)
 
 void ATP_ThirdPersonCharacter::MoveForward(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f) & !bIsInCover)
-	{
+	if ((Controller != NULL) && (Value != 0.0f) & !bIsInCover) {
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -226,8 +228,7 @@ void ATP_ThirdPersonCharacter::MoveForward(float Value)
 
 void ATP_ThirdPersonCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
-	{
+	if ( (Controller != NULL) && (Value != 0.0f) ) {
 		if (!bIsInCover) {
 			// find out which way is right
 			const FRotator Rotation = Controller->GetControlRotation();
@@ -301,26 +302,25 @@ void ATP_ThirdPersonCharacter::Fire() {
 	FVector End = Start + (FollowCamera->GetComponentRotation().Vector() * WeaponRange);
 
 	if (!IsAiming) {
-		Start = FollowCamera->GetComponentLocation();
-		End = Start + (FollowCamera->GetComponentRotation().Vector() * WeaponRange);
+		float WeaponOffset = Arsenal[ActiveWeapon].Offset;
+		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Emerald, TEXT("Not aiming!"));
+		Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
+		End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
 	}
 	
 	//bool bHit = GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
 
-	if (bHit)
-	{
+	if (bHit) {
 		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 3.0f);
 		
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEFX, Hit.ImpactPoint);
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Arsenal[ActiveWeapon].HitEFX, Hit.ImpactPoint);
 		AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
 		
 		if (HitActor) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cast do it! "+ HitActor->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! "+ HitActor->GetName()));
 			HitActor->Destroy();
-		} else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Cast failed!"));
 		}
 	}
 }
@@ -347,8 +347,7 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 		}
 		
 		if (bIsInCover && Cover) {
-			//This is done because my downloaded animations do not require an orientation to movement
-			//Depending on your animation you may (or not) need this
+			
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 
 			FRotator CoverRotation;
@@ -356,8 +355,6 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 			SetActorRotation(CoverRotation);
 			CrouchCharacter();
 		} else {
-			//This is done because my downloaded animations do not require an orientation to movement
-			//Depending on your animation you may (or not) need this
 			GetCharacterMovement()->bOrientRotationToMovement = true;
 			StopCrouchCharacter();
 		}

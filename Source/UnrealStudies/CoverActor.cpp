@@ -60,18 +60,26 @@ float ACoverActor::DistanceFromPlayer(FName SocketName)
 
 FName ACoverActor::GetNearbySocket()
 {
-	const FName AvailableSockets[4] =
+	const FName AvailableSockets[12] =
 	{
-		FName("ForwardSocket"),
-		FName("BackwardSocket"),
-		FName("RightSocket"),
-		FName("LeftSocket")
+		FName("ForwardSocket_1"),
+		FName("ForwardSocket_2"),
+		FName("ForwardSocket_3"),
+		FName("BackwardSocket_1"),
+		FName("BackwardSocket_2"),
+		FName("BackwardSocket_3"),
+		FName("RightSocket_1"),
+		FName("RightSocket_2"),
+		FName("RightSocket_3"),
+		FName("LeftSocket_1"),
+		FName("LeftSocket_2"),
+		FName("LeftSocket_3")
 	};
 
 	FName NearestSocket = AvailableSockets[0];
 	float MinDistance = 10000.0f;
 	//Find the socket that is close to the character
-	for (uint8 SocketPtr = 0; SocketPtr < 4; SocketPtr++) {
+	for (uint8 SocketPtr = 0; SocketPtr < 12; SocketPtr++) {
 		float Distance = DistanceFromPlayer(AvailableSockets[SocketPtr]);
 		if (Distance < MinDistance) {
 			NearestSocket = AvailableSockets[SocketPtr];
@@ -92,15 +100,16 @@ void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotato
 	//The way that we're deciding the facing direction is similar to the way we've decided
 	//the movement direction
 	FRotator FacingRot = GetActorRotation();
-	if (NearbySocket.IsEqual("ForwardSocket")) {
+	
+	if (NearbySocket.IsEqual("ForwardSocket_1") || NearbySocket.IsEqual("ForwardSocket_2") || NearbySocket.IsEqual("ForwardSocket_3")) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket forward"));
 		MovementDirection = -GetActorRightVector();
 		FacingDirection = FacingRot + FRotator(0, 180, 0);;
-	} else if (NearbySocket.IsEqual("BackwardSocket")) {
+	} else if (NearbySocket.IsEqual("BackwardSocket_1") || NearbySocket.IsEqual("BackwardSocket_2") || NearbySocket.IsEqual("BackwardSocket_3")) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket backward"));
 		MovementDirection = GetActorRightVector();
 		FacingDirection = FacingRot + FRotator(0, 0, 0);
-	} else if (NearbySocket.IsEqual("RightSocket")) {
+	} else if (NearbySocket.IsEqual("RightSocket_1") || NearbySocket.IsEqual("RightSocket_2") || NearbySocket.IsEqual("RightSocket_3")) {
 		GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Green, TEXT("socket right"));
 		MovementDirection = GetActorForwardVector();
 		FacingDirection = FacingRot + FRotator(0, -90, 0);
@@ -136,15 +145,16 @@ void ACoverActor::BeginPlay()
 		BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACoverActor::OnCompBeginOverlap);
 		BoxComp->OnComponentEndOverlap.AddDynamic(this, &ACoverActor::OnCompEndOverlap);
 		FVector BoxExtent = BoxComp->GetScaledBoxExtent();
-		GEngine->AddOnScreenDebugMessage(-12, 20.0f, FColor::Purple, FString::Printf(TEXT("Dim: %f - %f - %f"), BoxExtent.X, BoxExtent.Y, BoxExtent.Z));
+		
 		FVector ActorMeshScale = SM->GetComponentScale();
 		BoxExtent /= ActorMeshScale;
 		BoxExtent.X += BoxCompOffset.X / ActorMeshScale.X;
 		BoxExtent.Y += BoxCompOffset.Y / ActorMeshScale.Y;
 		BoxExtent.Z += BoxCompOffset.Z / ActorMeshScale.Z;
 		
-		GEngine->AddOnScreenDebugMessage(-10, 20.0f, FColor::Purple, FString::Printf(TEXT("Dim: %f - %f - %f"), BoxExtent.X, BoxExtent.Y, BoxExtent.Z));
 		BoxComp->SetBoxExtent(BoxExtent);
+
+
 	}
 }
 
