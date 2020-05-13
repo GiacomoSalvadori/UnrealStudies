@@ -18,6 +18,15 @@ public:
 	UStaticMesh *WeaponMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int MagCapacity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsAutomatic;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Rate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

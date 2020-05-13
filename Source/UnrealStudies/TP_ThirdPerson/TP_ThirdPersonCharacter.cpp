@@ -70,6 +70,8 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 void ATP_ThirdPersonCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	MagBullets = Arsenal[ActiveWeapon].MagCapacity;
+	FireTime = 0.0f;
 	FVector WeaponLocation = GetMesh()->GetSocketLocation("hand_rSocket");
 	FRotator WeaponRotaion = GetMesh()->GetSocketRotation("hand_rSocket");
 	FActorSpawnParameters SpawnParams;
@@ -125,8 +127,11 @@ void ATP_ThirdPersonCharacter::OnConstruction(const FTransform & Transform)
 
 void ATP_ThirdPersonCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
+
 	AimTimeline.TickTimeline(DeltaTime);
 	CrouchTimeline.TickTimeline(DeltaTime);
+	
+	AutomaticFire(DeltaTime);
 }
 
 void ATP_ThirdPersonCharacter::HandleProgressArmLength(float Length) {
@@ -154,12 +159,16 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATP_ThirdPersonCharacter::CrouchCharacter);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATP_ThirdPersonCharacter::StopCrouchCharacter);
 	*/
+
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimIn);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOut);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATP_ThirdPersonCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATP_ThirdPersonCharacter::StopFire);
 
 	PlayerInputComponent->BindAction("Cover", IE_Pressed, this, &ATP_ThirdPersonCharacter::ToggleCover);
+	
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATP_ThirdPersonCharacter::ReloadWeapon);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATP_ThirdPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATP_ThirdPersonCharacter::MoveRight);
@@ -171,8 +180,6 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAxis("TurnRate", this, &ATP_ThirdPersonCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATP_ThirdPersonCharacter::LookUpAtRate);
-
-
 }
 
 void ATP_ThirdPersonCharacter::AimIn(){
@@ -289,9 +296,7 @@ void ATP_ThirdPersonCharacter::OnJumped_Implementation() {
 	OnCharacterJumping.Broadcast();
 }
 
-void ATP_ThirdPersonCharacter::Fire() {
-	
-	// You can use this to customize various properties about the trace
+void ATP_ThirdPersonCharacter::FireFromWeapon() {
 	FCollisionQueryParams Params;
 	// Ignore the player's pawn
 	Params.AddIgnoredActor(this->GetParentActor());
@@ -310,27 +315,59 @@ void ATP_ThirdPersonCharacter::Fire() {
 		Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
 		End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
 	}
-	
-	//bool bHit = GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params);
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 
 	if (bHit) {
 		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 3.0f);
-		
+
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Arsenal[ActiveWeapon].HitEFX, Hit.ImpactPoint);
 		AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
-		
+
 		if (HitActor) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! "+ HitActor->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! " + HitActor->GetName()));
 			HitActor->GetHealthComponent()->GetDamage(Arsenal[ActiveWeapon].Damage);
 			HitActor->Destroy();
 		}
 	}
 }
 
-void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* CoverActor)
-{
+void ATP_ThirdPersonCharacter::AutomaticFire(float DeltaTime) {
+	if (Arsenal[ActiveWeapon].IsAutomatic && bIsFiring) {
+		FireTime += DeltaTime;
+		if (FireTime >= Arsenal[ActiveWeapon].Rate) {
+			FireTime = 0.0f;
+			if (MagBullets > 0) {
+				FireFromWeapon();
+				MagBullets--;
+			} else {
+				StopFire();
+				ReloadWeapon();
+			}
+		}
+	}
+}
+
+void ATP_ThirdPersonCharacter::Fire() {
+	if (!bIsReloading) {
+		bIsFiring = true;
+		FireTime = 0.0f;
+		if (MagBullets > 0) {
+			FireFromWeapon();
+			MagBullets--;
+		} else {
+			StopFire();
+			ReloadWeapon();
+		}
+	}
+}
+
+void ATP_ThirdPersonCharacter::StopFire() {
+	bIsFiring = false;
+	FireTime = 0.0f;
+}
+
+void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* CoverActor) {
 	if (!CanTakeCover && bIsInCover) {
 		ToggleCover();
 	}
@@ -363,4 +400,16 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 			StopCrouchCharacter();
 		}
 	}
+}
+
+void ATP_ThirdPersonCharacter::ReloadWeapon() {
+	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Red, TEXT("Start Reload!"));
+	bIsReloading = true;
+	OnCharacterStartReload.Broadcast();
+}
+
+void ATP_ThirdPersonCharacter::EndReload() {
+	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Orange, TEXT("End Reload!"));
+	bIsReloading = false;
+	MagBullets = Arsenal[ActiveWeapon].MagCapacity;
 }

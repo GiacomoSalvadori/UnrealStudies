@@ -62,6 +62,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterStopAim;
 
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterStartReload;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -95,18 +98,26 @@ public:
 private:
 	int ActiveWeapon;
 
+	int MagBullets;
+
 	float MaxSpeedWalkingOrig;
 
+	float FireTime;
+
 	bool IsAiming;
-
-	FTimeline AimTimeline;
-
-	FTimeline CrouchTimeline;
 	
 	bool bCanTakeCover = false;
 	
 	bool bIsInCover = false;
+
+	bool bIsFiring = false;
+
+	bool bIsReloading = false;
 	
+	FTimeline AimTimeline;
+
+	FTimeline CrouchTimeline;
+
 	FVector CoverDirectionMovement;
 
 	ACoverActor* Cover;
@@ -120,6 +131,10 @@ private:
 	UFUNCTION()
 	void HandleProgressCrouch(float Height);
 
+	void FireFromWeapon();
+
+	void AutomaticFire(float DeltaTime);
+
 protected:
 	
 	void JumpCharacter();
@@ -130,6 +145,8 @@ protected:
 
 	void AimIn();
 	void AimOut();
+
+	void ReloadWeapon();
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -166,9 +183,14 @@ public:
 
 	/** Called when the player try to fire with weapon */
 	void Fire();
+	/** Called when the player stop firing with weapon */
+	void StopFire();
 
 	/**Enables or disables the cover mode*/
 	void ToggleCover();
+
+	UFUNCTION(BlueprintCallable, Category = "Reload")
+	void EndReload();
 
 	/** Inform the player that he's able to take cover in the provided actor */
 	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
