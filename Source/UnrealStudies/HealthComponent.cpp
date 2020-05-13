@@ -15,6 +15,9 @@ void UHealthComponent::BeginPlay()
 
 	HealthDefaultValue = Health;
 	HealthMaxValue = Health;
+	ElapsedTime = 0.0f;
+	TimeSinceLastDamage = 0.0f;
+	bIsDamaged = false;
 }
 
 
@@ -22,12 +25,15 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	AutoRecoveryHealth(DeltaTime);
+	CheckDamageTime(DeltaTime);
 }
 
 
 void UHealthComponent::GetDamage(float Amount) {
-	Health -= Amount;
-	
+	Health = FMath::Clamp(Health - Amount, 0.0f, HealthMaxValue);
+	bIsDamaged = true;
+	TimeSinceLastDamage = GetWorld()->GetTimeSeconds();
 	OnGetDamage.Broadcast();
 	if (Health <= 0) {
 		OnHealtToZero.Broadcast();
@@ -39,11 +45,30 @@ void UHealthComponent::IncrementMaxHealth(float Amount) {
 }
 
 void UHealthComponent::Healing(float Amount) {
-	Health += Amount;
+	Health = FMath::Clamp(Health + Amount, 0.0f, HealthMaxValue);
 }
 
-void UHealthComponent::AutoRecoverHealth() {
+void UHealthComponent::CheckDamageTime(float DeltaTime) {
+	if (bIsDamaged) {
+		float ActualTime = GetWorld()->GetTimeSeconds();
+		if ((ActualTime - TimeSinceLastDamage) >= NoDamageTimeForRecovery) {
+			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Purple, FString::Printf(TEXT("Time! %f - %f"), ActualTime, TimeSinceLastDamage));
+			bIsDamaged = false;
+		}
+	}
+}
 
+void UHealthComponent::AutoRecoveryHealth(float DeltaTime) {
+	if (bAutoRecovery && !bIsDamaged) {
+		ElapsedTime += DeltaTime;
+		
+		if (ElapsedTime >= HealthRecoveryTime) {
+			ElapsedTime = 0.0f;
+			Healing(RecoveryQuantity);
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Time! %f - %f"), DeltaTime, Health));
+			OnHealthRecovery.Broadcast();
+		}		
+	}
 }
 
 float UHealthComponent::HealthPercentage() {

@@ -23,6 +23,13 @@ protected:
 private:
 	float HealthDefaultValue;
 	float HealthMaxValue;
+	float ElapsedTime;
+	float TimeSinceLastDamage;
+	bool bIsDamaged;
+
+	void AutoRecoveryHealth(float DeltaTime);
+
+	void CheckDamageTime(float DeltaTime);
 
 public:	
 	// Called every frame
@@ -33,27 +40,32 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FHealtDelegate OnHealtToZero; // Called when Health values is <= 0
+
+	UPROPERTY(BlueprintAssignable)
+	FHealtDelegate OnHealthRecovery; // Called every time Health is recovered
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
 	float Health;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
-	bool bAutoRecover = true;
+	bool bAutoRecovery = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
-	float RecoverQuantity = 1.0f;
+	float RecoveryQuantity = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
-	float RecoverQuantityTime = 02.f;
+	float HealthRecoveryTime = 0.2f;
+
+	/** Time to wait after receive damage */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
+	float NoDamageTimeForRecovery = 2.5f;
 
 	void GetDamage(float Amount);
 
 	void IncrementMaxHealth(float Amount);
 
 	void Healing(float Amount);
-
-	void AutoRecoverHealth();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float HealthPercentage();
 

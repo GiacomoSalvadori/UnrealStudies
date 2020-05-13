@@ -42,6 +42,7 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::OnConstruction(const FTransform & Transform)
 {
 	WeaponMesh->SetStaticMesh(WeaponSlot.WeaponMesh);
+	GetHealthComponent()->bAutoRecovery = false;
 }
 
 void AEnemy::FireWithWeapon() {
