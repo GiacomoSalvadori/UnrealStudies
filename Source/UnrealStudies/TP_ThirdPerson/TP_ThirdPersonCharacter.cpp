@@ -317,6 +317,7 @@ void ATP_ThirdPersonCharacter::FireFromWeapon() {
 	}
 
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
+	OnCharacterTraceLine.Broadcast();
 
 	if (bHit) {
 		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 3.0f);
@@ -325,9 +326,8 @@ void ATP_ThirdPersonCharacter::FireFromWeapon() {
 		AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
 
 		if (HitActor) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! " + HitActor->GetName()));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! " + HitActor->GetName()));
 			HitActor->GetHealthComponent()->GetDamage(Arsenal[ActiveWeapon].Damage);
-			HitActor->Destroy();
 		}
 	}
 }
@@ -412,4 +412,8 @@ void ATP_ThirdPersonCharacter::EndReload() {
 	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Orange, TEXT("End Reload!"));
 	bIsReloading = false;
 	MagBullets = Arsenal[ActiveWeapon].MagCapacity;
+}
+
+int ATP_ThirdPersonCharacter::MagCounter() {
+	return MagBullets;
 }

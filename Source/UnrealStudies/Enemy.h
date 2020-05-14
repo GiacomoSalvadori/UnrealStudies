@@ -25,6 +25,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
+	
+
+private:
+	
 
 protected:
 	
@@ -32,8 +36,7 @@ protected:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
-public:	
-	
+public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
@@ -41,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void FireWithSphereSweep();
+
+	UFUNCTION()
+	void Damaged();
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }

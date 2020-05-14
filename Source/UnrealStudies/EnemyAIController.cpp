@@ -2,6 +2,9 @@
 
 
 #include "EnemyAIController.h"
+#include "Enemy.h"
+#include "HealthComponent.h"
+#include "BrainComponent.h"
 
 AEnemyAIController::AEnemyAIController() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -15,13 +18,18 @@ AEnemyAIController::AEnemyAIController() {
 
 	PerceptionComponent->ConfigureSense(*SightConfig);
 	PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
-
 }
 
 void AEnemyAIController::BeginPlay() {
 	Super::BeginPlay();
-	//GetAIPerceptionComponent()->OnPerceptionUpdate.AddDynamic(this, &AEnemyAIController::SaySomething);
-	PerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAIController::SaySomething);
+
+	RunBehaviorTree(BehaviourTree);
+	// Inscribe to delegate to stop behaviour tree when the pawn die
+	AEnemy* ControlledPawn = Cast<AEnemy>(GetPawn());
+
+	if (ControlledPawn) {
+		ControlledPawn->HealthComponent->OnHealtToZero.AddDynamic(this, &AEnemyAIController::StopAI);
+	}
 }
 
 void AEnemyAIController::Tick(float DeltaTime) {
@@ -29,6 +37,8 @@ void AEnemyAIController::Tick(float DeltaTime) {
 
 }
 
-void AEnemyAIController::SaySomething(AActor* actor, FAIStimulus stimulus) {
+void AEnemyAIController::StopAI() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Yellow, TEXT("I see you!"));
+	BrainComponent->StopLogic("Death");
+	Destroy();
 }

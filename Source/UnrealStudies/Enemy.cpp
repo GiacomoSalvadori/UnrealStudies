@@ -45,6 +45,7 @@ void AEnemy::OnConstruction(const FTransform & Transform)
 	GetHealthComponent()->bAutoRecovery = false;
 }
 
+
 void AEnemy::FireWithWeapon() {
 
 	// You can use this to customize various properties about the trace
@@ -105,4 +106,8 @@ void AEnemy::FireWithSphereSweep() {
 		}
 		
 	}
+}
+
+void AEnemy::Damaged() {
+	GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Blue, TEXT("AI Damaged!"));
 }

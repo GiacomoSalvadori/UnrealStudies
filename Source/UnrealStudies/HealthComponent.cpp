@@ -52,7 +52,6 @@ void UHealthComponent::CheckDamageTime(float DeltaTime) {
 	if (bIsDamaged) {
 		float ActualTime = GetWorld()->GetTimeSeconds();
 		if ((ActualTime - TimeSinceLastDamage) >= NoDamageTimeForRecovery) {
-			GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Purple, FString::Printf(TEXT("Time! %f - %f"), ActualTime, TimeSinceLastDamage));
 			bIsDamaged = false;
 		}
 	}
@@ -65,7 +64,7 @@ void UHealthComponent::AutoRecoveryHealth(float DeltaTime) {
 		if (ElapsedTime >= HealthRecoveryTime) {
 			ElapsedTime = 0.0f;
 			Healing(RecoveryQuantity);
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Time! %f - %f"), DeltaTime, Health));
+			//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Time! %f - %f"), DeltaTime, Health));
 			OnHealthRecovery.Broadcast();
 		}		
 	}

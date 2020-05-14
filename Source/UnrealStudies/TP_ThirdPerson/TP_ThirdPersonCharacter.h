@@ -65,6 +65,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterStartReload;
 
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterTraceLine;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -191,6 +194,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	void EndReload();
+
+	UFUNCTION(BlueprintCallable, Category = "Reload")
+	int MagCounter();
 
 	/** Inform the player that he's able to take cover in the provided actor */
 	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);

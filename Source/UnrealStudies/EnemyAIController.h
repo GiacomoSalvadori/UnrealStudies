@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "EnemyAIController.generated.h"
 
 /**
@@ -18,12 +19,14 @@ class UNREALSTUDIES_API AEnemyAIController : public AAIController
 	
 public:
 	AEnemyAIController();
-	/*
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UAIPerceptionComponent* PerceptionComponent;
-	*/
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI: behaviour tree")
+	UBehaviorTree* BehaviourTree;
 
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION()
+	void StopAI();
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,5 +34,4 @@ protected:
 private:
 	UAISenseConfig_Sight* SightConfig;
 
-	void SaySomething(AActor* actor, FAIStimulus stimulus);
 };
