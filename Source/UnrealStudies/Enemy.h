@@ -4,6 +4,7 @@
 
 #include "Engine.h"
 #include "WeaponSlot.h"
+#include "EnemyPath.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Enemy.generated.h"
@@ -25,7 +26,10 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
+	AEnemyPath* PathToPatrol;
+		
 
 private:
 	

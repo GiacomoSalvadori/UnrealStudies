@@ -23,6 +23,7 @@ AEnemy::AEnemy()
 
 	// Add Health manager
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+
 }
 
 // Called when the game starts or when spawned
