@@ -112,7 +112,3 @@ void AEnemy::FireWithSphereSweep() {
 		
 	}
 }
-
-void AEnemy::Damaged() {
-	GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Blue, TEXT("AI Damaged!"));
-}

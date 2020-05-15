@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Damage.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "EnemyAIController.generated.h"
 
@@ -27,6 +28,9 @@ public:
 
 	UFUNCTION()
 	void StopAI();
+
+	UFUNCTION()
+	void DetectPlayer();
 
 protected:
 	virtual void BeginPlay() override;

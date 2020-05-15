@@ -44,10 +44,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void FireWithSphereSweep();
-
-	UFUNCTION()
-	void Damaged();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 };

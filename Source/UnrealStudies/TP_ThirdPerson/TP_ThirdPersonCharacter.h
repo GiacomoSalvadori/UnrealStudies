@@ -107,7 +107,7 @@ private:
 
 	float FireTime;
 
-	bool IsAiming;
+	bool bIsAiming;
 	
 	bool bCanTakeCover = false;
 	
@@ -133,6 +133,9 @@ private:
 
 	UFUNCTION()
 	void HandleProgressCrouch(float Height);
+
+	UFUNCTION()
+	void StopCharacter();
 
 	void FireFromWeapon();
 

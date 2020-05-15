@@ -64,7 +64,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 	//Set active weapon index
 	ActiveWeapon = 0;
 	ActualEight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	IsAiming = false;
+	bIsAiming = false;
 }
 
 void ATP_ThirdPersonCharacter::BeginPlay() {
@@ -96,29 +96,13 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 		ProgressFunctionCrouch.BindUFunction(this, "HandleProgressCrouch");
 		CrouchTimeline.AddInterpFloat(CrouchCurve, ProgressFunctionCrouch);
 	}
+
+
+	HealthComponent->OnHealtToZero.AddDynamic(this, &ATP_ThirdPersonCharacter::StopCharacter);
 }
 
 void ATP_ThirdPersonCharacter::OnConstruction(const FTransform & Transform)
 {
-	/*
-	WeaponComponent = NewObject<UChildActorComponent>(this);
-	//UChildActorComponent* NewComp1 = NewObject<UChildActorComponent>(this);
-
-	WeaponComponent->bEditableWhenInherited = true;
-	//WeaponComponent->SetupAttachment(GetMesh(), "hand_rSocket");
-	WeaponComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
-	WeaponComponent->RegisterComponent();
-	if (Arsenal.Num() > 0) {
-		WeaponComponent->SetChildActorClass(Arsenal[0]);
-		
-	} else {
-		WeaponComponent->SetChildActorClass(AWeapon::StaticClass());
-	}
-	
-	WeaponComponent->CreateChildActor();
-
-	*/
-
 	if (Arsenal.Num() > 0) {
 		WeaponMesh->SetStaticMesh(Arsenal[0].WeaponMesh);
 	}
@@ -187,7 +171,7 @@ void ATP_ThirdPersonCharacter::AimIn(){
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedAiming;
-	IsAiming = true;
+	bIsAiming = true;
 	if (bIsInCover) {
 		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim from cover"));
 		StopCrouchCharacter();
@@ -201,7 +185,7 @@ void ATP_ThirdPersonCharacter::AimOut(){
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalkingOrig;
-	IsAiming = false;
+	bIsAiming = false;
 	if (bIsInCover) {
 		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Stop aim from cover"));
 		CrouchCharacter();
@@ -309,7 +293,7 @@ void ATP_ThirdPersonCharacter::FireFromWeapon() {
 	FVector Start = FollowCamera->GetComponentLocation();
 	FVector End = Start + (FollowCamera->GetComponentRotation().Vector() * WeaponRange);
 
-	if (!IsAiming) {
+	if (!bIsAiming) {
 		float WeaponOffset = Arsenal[ActiveWeapon].Offset;
 		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Emerald, TEXT("Not aiming!"));
 		Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
@@ -460,4 +444,13 @@ bool ATP_ThirdPersonCharacter::CheckAroundMe(float Radius, AActor* Looking) {
 	}
 
 	return false;
+}
+
+void ATP_ThirdPersonCharacter::StopCharacter() {
+	HealthComponent->OnHealtToZero.RemoveDynamic(this, &ATP_ThirdPersonCharacter::StopCharacter);
+	if (bIsAiming) {
+		AimOut();
+	}
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	DisableInput(PlayerController);
 }
