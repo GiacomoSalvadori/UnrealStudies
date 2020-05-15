@@ -195,6 +195,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	void EndReload();
 
+	/** Trace line in front of Character */
+	AActor* TraceLineForward(float Distance);
+
+	bool CheckAroundMe(float Radius, AActor* Looking);
+
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	int MagCounter();
 

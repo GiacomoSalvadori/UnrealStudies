@@ -40,5 +40,10 @@ void AEnemyAIController::Tick(float DeltaTime) {
 void AEnemyAIController::StopAI() {
 	GEngine->AddOnScreenDebugMessage(-1, 1.2f, FColor::Yellow, TEXT("I see you!"));
 	BrainComponent->StopLogic("Death");
+	AEnemy* ControlledPawn = Cast<AEnemy>(GetPawn());
+
+	if (ControlledPawn) {
+		ControlledPawn->GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	}
 	Destroy();
 }

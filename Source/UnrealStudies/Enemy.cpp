@@ -79,6 +79,11 @@ void AEnemy::FireWithWeapon() {
 
 void AEnemy::FireWithSphereSweep() {
 	
+	FCollisionQueryParams Params;
+	// Ignore the enemy's pawn
+	AActor* Myself = Cast<AEnemy>(this);
+	Params.AddIgnoredActor(Myself);
+
 	float WeaponRange = WeaponSlot.Range;
 	float WeaponOffset = WeaponSlot.Offset;
 	float WeaponRadius = WeaponSlot.HitRadius;
@@ -89,7 +94,7 @@ void AEnemy::FireWithSphereSweep() {
 
 	FHitResult Hit;
 
-	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Pawn, CollShape);
+	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Pawn, CollShape, Params);
 	DrawDebugCylinder(GetWorld(), Start, End, WeaponRadius, 12, FColor::Orange, false, 3.0f);
 
 	if (bHit) {

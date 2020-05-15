@@ -299,7 +299,7 @@ void ATP_ThirdPersonCharacter::OnJumped_Implementation() {
 void ATP_ThirdPersonCharacter::FireFromWeapon() {
 	FCollisionQueryParams Params;
 	// Ignore the player's pawn
-	Params.AddIgnoredActor(this->GetParentActor());
+	Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
 	// The hit result gets populated by the line trace
 	FHitResult Hit;
@@ -378,7 +378,8 @@ void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* C
 
 void ATP_ThirdPersonCharacter::ToggleCover()
 {
-	if (bCanTakeCover) {
+	bool IsNear = CheckAroundMe(80.0f, Cover);
+	if (bCanTakeCover && IsNear) {
 		bIsInCover = !bIsInCover;
 		// DEBUG message
 		if (bIsInCover) {
@@ -387,16 +388,12 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover!"));
 		}
 		
-		if (bIsInCover && Cover) {
-			
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-
+		if (bIsInCover && Cover) {			
 			FRotator CoverRotation;
 			Cover->RetrieveMovementDirectionAndFacingRotation(CoverDirectionMovement, CoverRotation);
 			SetActorRotation(CoverRotation);
 			CrouchCharacter();
 		} else {
-			GetCharacterMovement()->bOrientRotationToMovement = true;
 			StopCrouchCharacter();
 		}
 	}
@@ -416,4 +413,51 @@ void ATP_ThirdPersonCharacter::EndReload() {
 
 int ATP_ThirdPersonCharacter::MagCounter() {
 	return MagBullets;
+}
+
+AActor* ATP_ThirdPersonCharacter::TraceLineForward(float Distance) {
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));	
+
+	// The hit result gets populated by the line trace
+	FHitResult Hit;
+
+	// Raycast out from the camera, only collide with pawns (they are on the ECC_Pawn collision channel)
+	FVector Start = GetActorLocation();
+	FVector End = Start + (GetActorForwardVector() * Distance);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, 3.0f);
+
+	if (bHit) {
+		return Hit.Actor.Get();
+	}
+
+	return nullptr;
+}
+
+
+bool ATP_ThirdPersonCharacter::CheckAroundMe(float Radius, AActor* Looking) {
+	if (Looking != nullptr) {
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+
+		FCollisionShape CollShape = FCollisionShape::MakeSphere(Radius);
+		// The hit result gets populated by the line trace
+		TArray<FHitResult> Hit;
+
+		// Raycast out from the camera, only collide with pawns (they are on the ECC_Pawn collision channel)
+		FVector Pos = GetCapsuleComponent()->GetComponentLocation();
+		bool bHit = GetWorld()->SweepMultiByChannel(Hit, Pos, Pos, FQuat::Identity, ECC_Pawn, CollShape, Params);
+		//DrawDebugSphere(GetWorld(), Pos, Radius, 12, FColor::Orange, false, 3.0f);
+
+		if (bHit) {
+			for (auto& HitActor : Hit) {
+				if (HitActor.Actor.Get() == Looking) {
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
