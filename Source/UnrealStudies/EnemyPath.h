@@ -32,8 +32,10 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, Category = "AI Path")
 	void GoNextNode();
 
+	UFUNCTION(BlueprintCallable, Category = "AI Path")
 	FVector ActualPoint();
 
 };

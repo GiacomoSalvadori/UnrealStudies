@@ -12,12 +12,14 @@ AEnemyAIController::AEnemyAIController() {
 
 	// Set AI perception
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception"));
-
+	
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
-	SightConfig->SightRadius = 600.0f;
-	SightConfig->LoseSightRadius = 700.0f;
+	SightConfig->SightRadius = 3000.0f;
+	SightConfig->LoseSightRadius = 3500.0f;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-
+	SightConfig->PeripheralVisionAngleDegrees = 45.0f;
+	SightConfig->AutoSuccessRangeFromLastSeenLocation = 1600.0f;
+	
 	PerceptionComponent->ConfigureSense(*SightConfig);
 	PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 }
@@ -33,6 +35,8 @@ void AEnemyAIController::BeginPlay() {
 		ControlledPawn->HealthComponent->OnHealtToZero.AddDynamic(this, &AEnemyAIController::StopAI);
 		ControlledPawn->HealthComponent->OnGetDamage.AddDynamic(this, &AEnemyAIController::DetectPlayer);
 	}
+	
+	PerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdate_SenseManagement);
 }
 
 void AEnemyAIController::Tick(float DeltaTime) {
@@ -55,3 +59,28 @@ void AEnemyAIController::StopAI() {
 void AEnemyAIController::DetectPlayer() {
 	GetBlackboardComponent()->SetValueAsBool("SeePlayer", true);
 }
+
+void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*>& UpdateActors) {
+	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Things happening "));
+
+	for (auto& Actor : UpdateActors) {
+		
+		//FActorPerceptionBlueprintInfo BlueprintInfo = PerceptionComponent->GetActorInfo();
+		const FActorPerceptionInfo* ActorInfo = PerceptionComponent->GetActorInfo(*Actor);
+		//PerceptionComponent->GetActorsPerception(Actor, BlueprintInfo);
+		
+		FAISenseID SightID = SightConfig->GetSenseID();
+		if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) {
+			if (ActorInfo->LastSensedStimuli[SightID].WasSuccessfullySensed()) {
+				GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Black, TEXT("Actor-> " + Actor->GetFullName()));
+				ManageSight();
+			}
+		}
+	}
+}
+
+void AEnemyAIController::ManageSight(){
+	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Things happening"));
+	DetectPlayer();
+}
+

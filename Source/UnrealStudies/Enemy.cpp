@@ -16,6 +16,7 @@ AEnemy::AEnemy()
 	GetCharacterMovement()->AirControl = 0.2f;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	GetCharacterMovement()->CrouchedHalfHeight = 52.0f;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 0.0f, 250.0f);
 
 	// Add a mesh for the weapon
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));

@@ -32,10 +32,16 @@ public:
 	UFUNCTION()
 	void DetectPlayer();
 
+
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void OnPerceptionUpdate_SenseManagement(const TArray<AActor*>& UpdateActors);
+
 private:
 	UAISenseConfig_Sight* SightConfig;
+
+	void ManageSight();
 
 };

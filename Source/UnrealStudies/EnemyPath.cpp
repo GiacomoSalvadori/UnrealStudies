@@ -38,13 +38,12 @@ void AEnemyPath::OnConstruction(const FTransform & Transform) {
 
 void AEnemyPath::GoNextNode() {
 	PathIndex += PathSense;
-	if (PathIndex == PathPoints.Num()) {
+	if (PathIndex == PathPoints.Num()-1 || PathIndex == 0) {
 		PathSense *= -1;
-		PathIndex += PathSense;
 	}
 }
 
 FVector AEnemyPath::ActualPoint() {
-
-	return PathPoints[PathIndex];
+	FVector Pos = GetActorTransform().TransformPosition(PathPoints[PathIndex]);
+	return Pos;
 }
