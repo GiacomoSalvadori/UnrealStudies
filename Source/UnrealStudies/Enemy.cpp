@@ -63,7 +63,8 @@ void AEnemy::FireWithWeapon() {
 	float WeaponOffset = WeaponSlot.Offset;
 	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Blue, TEXT("AI Fire!"));
 	FVector Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
-	FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
+	//FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
+	FVector End = Start + (GetActorForwardVector() * WeaponOffset);
 
 	//bool bHit = GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
