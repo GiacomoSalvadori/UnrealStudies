@@ -20,6 +20,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float AimOffset = 60.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FWeaponSlot WeaponSlot;
@@ -27,7 +30,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Path")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Path")
 	AEnemyPath* PathToPatrol;
 		
 

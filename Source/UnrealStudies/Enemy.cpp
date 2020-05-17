@@ -63,10 +63,8 @@ void AEnemy::FireWithWeapon() {
 	float WeaponOffset = WeaponSlot.Offset;
 	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Blue, TEXT("AI Fire!"));
 	FVector Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
-	//FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
-	FVector End = Start + (GetActorForwardVector() * WeaponOffset);
+	FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
 
-	//bool bHit = GetWorld()->LineTraceSingle(Hit, Start, End, ECC_Pawn, Params);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
 	
 	if (bHit) {
@@ -91,9 +89,10 @@ void AEnemy::FireWithSphereSweep() {
 	float WeaponOffset = WeaponSlot.Offset;
 	float WeaponRadius = WeaponSlot.HitRadius;
 	FCollisionShape CollShape = FCollisionShape::MakeSphere(WeaponRadius);
-
-	FVector Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
-	FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
+	FVector ZForward = FVector::UpVector * AimOffset;
+	FVector Start = WeaponMesh->GetComponentLocation()+ ZForward + (WeaponMesh->GetForwardVector() * WeaponOffset);
+	//FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
+	FVector End = Start + (GetActorForwardVector() * WeaponRange);
 
 	FHitResult Hit;
 
