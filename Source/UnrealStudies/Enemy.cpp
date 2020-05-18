@@ -114,3 +114,24 @@ void AEnemy::FireWithSphereSweep() {
 		
 	}
 }
+
+void AEnemy::CrouchMe() {
+	if (CanCrouch()) {
+		Crouch();
+		OnCharacterCrouch.Broadcast();
+	}
+}
+
+void AEnemy::UncrouchMe() {
+	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Orange, TEXT("Enemy uncrouch!"));
+	UnCrouch();
+	OnCharacterUncrouch.Broadcast();
+}
+
+void AEnemy::AimIn() {
+	OnCharacterAim.Broadcast();
+}
+
+void AEnemy::AimOut() {
+	OnCharacterStopAim.Broadcast();
+}

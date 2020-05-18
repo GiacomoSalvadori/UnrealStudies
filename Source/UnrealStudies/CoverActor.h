@@ -29,6 +29,8 @@ private:
 
 	/** Returns the name of the nearby socket */
 	FName GetNearbySocket();
+
+	FName GetOppositeSocket(FName Socket);
 	
 protected:
 
@@ -51,5 +53,8 @@ public:
 
 	/** Retrieves the movement direction and the facing rotation of the player */
 	void RetrieveMovementDirectionAndFacingRotation(FVector& MovementDirection, FRotator& FacingRotation);
+
+	UFUNCTION(BlueprintCallable, Category = "Cover")
+	FVector GetPositionHiddenFromPlayer();
 
 };

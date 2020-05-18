@@ -62,13 +62,8 @@ void AEnemyAIController::DetectPlayer() {
 }
 
 void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*>& UpdateActors) {
-	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Things happening "));
-
 	for (auto& Actor : UpdateActors) {
-		
-		//FActorPerceptionBlueprintInfo BlueprintInfo = PerceptionComponent->GetActorInfo();
 		const FActorPerceptionInfo* ActorInfo = PerceptionComponent->GetActorInfo(*Actor);
-		//PerceptionComponent->GetActorsPerception(Actor, BlueprintInfo);
 		
 		FAISenseID SightID = SightConfig->GetSenseID();
 		if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) {
@@ -81,7 +76,6 @@ void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*
 }
 
 void AEnemyAIController::ManageSight(){
-	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Things happening"));
 	DetectPlayer();
 }
 

@@ -54,7 +54,8 @@ FName ACoverActor::GetNearbySocket()
 	};
 
 	FName NearestSocket = AvailableSockets[0];
-	float MinDistance = 10000.0f;
+	
+	float MinDistance = INFINITY;
 	//Find the socket that is close to the character
 	for (uint8 SocketPtr = 0; SocketPtr < 12; SocketPtr++) {
 		float Distance = DistanceFromPlayer(AvailableSockets[SocketPtr]);
@@ -132,12 +133,61 @@ void ACoverActor::BeginPlay()
 		BoxExtent.Z += BoxCompOffset.Z / ActorMeshScale.Z;
 		
 		BoxComp->SetBoxExtent(BoxExtent);
-
-
 	}
 }
 
 void ACoverActor::RetrieveMovementDirectionAndFacingRotation(FVector& MovementDirection, FRotator& FacingRotation)
 {
 	DetermineMovementDirection(MovementDirection, FacingRotation);
+}
+
+FVector ACoverActor::GetPositionHiddenFromPlayer() {
+	FName NearbySocket = GetNearbySocket();
+	FName OppositeSocket = GetOppositeSocket(NearbySocket);
+
+	FVector SocketLocation = SM->GetSocketLocation(OppositeSocket);
+
+	return SocketLocation;
+}
+
+FName ACoverActor::GetOppositeSocket(FName Socket) {
+	FName OppositeSocket = FName("ForwardSocket_1");
+
+	if (Socket.IsEqual("ForwardSocket_1"))
+		OppositeSocket = FName("BackwardSocket_1");
+
+	if(Socket.IsEqual("ForwardSocket_2"))
+		OppositeSocket = FName("BackwardSocket_1");
+
+	if (Socket.IsEqual("ForwardSocket_3"))
+		OppositeSocket = FName("BackwardSocket_1");
+
+	if (Socket.IsEqual("BackwardSocket_1"))
+		OppositeSocket = FName("ForwardSocket_1");
+
+	if (Socket.IsEqual("BackwardSocket_2"))
+		OppositeSocket = FName("ForwardSocket_1");
+
+	if (Socket.IsEqual("BackwardSocket_3"))
+		OppositeSocket = FName("ForwardSocket_1");
+
+	if (Socket.IsEqual("RightSocket_1"))
+		OppositeSocket = FName("LeftSocket_1");
+
+	if (Socket.IsEqual("RightSocket_2"))
+		OppositeSocket = FName("LeftSocket_1");
+
+	if (Socket.IsEqual("RightSocket_3"))
+		OppositeSocket = FName("LeftSocket_1");
+
+	if (Socket.IsEqual("LeftSocket_1"))
+		OppositeSocket = FName("RightSocket_1");
+
+	if (Socket.IsEqual("LeftSocket_2"))
+		OppositeSocket = FName("RightSocket_1");
+
+	if (Socket.IsEqual("LeftSocket_3"))
+		OppositeSocket = FName("RightSocket_1");
+
+	return OppositeSocket;
 }

@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Enemy.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameStateEnemy);
 UCLASS()
 class UNREALSTUDIES_API AEnemy : public ACharacter
 {
@@ -51,6 +52,42 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void FireWithSphereSweep();
+
+	UFUNCTION(BlueprintCallable, Category = "Cover")
+	void CrouchMe();
+
+	UFUNCTION(BlueprintCallable, Category = "Cover")
+	void UncrouchMe();
+
+	UFUNCTION(BlueprintCallable, Category = "Cover")
+	void AimIn();
+
+	UFUNCTION(BlueprintCallable, Category = "Cover")
+	void AimOut();
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterLanding;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterJumping;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterCrouch;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterUncrouch;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterAim;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterStopAim;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterStartReload;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateEnemy OnCharacterTraceLine;
 	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
