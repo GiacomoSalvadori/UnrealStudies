@@ -13,7 +13,7 @@ An UE4 project made for studying TPS mechanics. The project has no sounds implem
 - Implementing TPS mechanics: walk, move camera, aim on the shoulder, cover system, reload, shooting
 - Implementing AI with Behaviour tree. In this project I made two kinds of Enemy:
 	- An Enemy who follow the player character and attacks from close
-	- An Enemy who attack from long range and uses the covers on the battlefield
+	- An Enemy who attacks from long range and uses the covers on the battlefield
 	
 ## Input
 
