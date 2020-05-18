@@ -26,7 +26,7 @@ AEnemyAIController::AEnemyAIController() {
 
 void AEnemyAIController::BeginPlay() {
 	Super::BeginPlay();
-
+	
 	RunBehaviorTree(BehaviourTree);
 	// Inscribe to delegate to stop behaviour tree when the pawn die
 	AEnemy* ControlledPawn = Cast<AEnemy>(GetPawn());
@@ -34,6 +34,7 @@ void AEnemyAIController::BeginPlay() {
 	if (ControlledPawn) {
 		ControlledPawn->HealthComponent->OnHealtToZero.AddDynamic(this, &AEnemyAIController::StopAI);
 		ControlledPawn->HealthComponent->OnGetDamage.AddDynamic(this, &AEnemyAIController::DetectPlayer);
+		GetBlackboardComponent()->SetValueAsFloat("OriginalWalkSpeed", ControlledPawn->GetCharacterMovement()->MaxWalkSpeed);
 	}
 	
 	PerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdate_SenseManagement);
