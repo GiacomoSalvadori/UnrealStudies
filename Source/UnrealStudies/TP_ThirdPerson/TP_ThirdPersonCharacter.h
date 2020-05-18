@@ -4,7 +4,6 @@
 
 #include "Engine.h"
 #include "Engine/EngineTypes.h"
-#include "../Weapon.h"
 #include "../WeaponSlot.h"
 #include "../Enemy.h"
 #include "../CoverActor.h"

@@ -97,14 +97,12 @@ void AEnemy::FireWithSphereSweep() {
 	FHitResult Hit;
 
 	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Pawn, CollShape, Params);
-	DrawDebugCylinder(GetWorld(), Start, End, WeaponRadius, 12, FColor::Orange, false, 3.0f);
+	//DrawDebugCylinder(GetWorld(), Start, End, WeaponRadius, 12, FColor::Orange, false, 3.0f);
 
 	if (bHit) {
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponSlot.HitEFX, Hit.ImpactPoint);
-		//AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
 		ATP_ThirdPersonCharacter* HitPlayer = Cast<ATP_ThirdPersonCharacter>(Hit.Actor.Get());
 
-		//HitPlayer->GetClass()->ImplementsInterface
 		if (HitPlayer) {
 			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("Hit! Player"));
 			HitPlayer->GetHealthComponent()->GetDamage(WeaponSlot.Damage);

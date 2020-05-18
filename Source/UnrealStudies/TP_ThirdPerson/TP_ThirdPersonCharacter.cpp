@@ -304,13 +304,11 @@ void ATP_ThirdPersonCharacter::FireFromWeapon() {
 	OnCharacterTraceLine.Broadcast();
 
 	if (bHit) {
-		DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 3.0f);
-
+		//DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 3.0f);
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Arsenal[ActiveWeapon].HitEFX, Hit.ImpactPoint);
 		AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
 
 		if (HitActor) {
-			//GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("Hit! " + HitActor->GetName()));
 			HitActor->GetHealthComponent()->GetDamage(Arsenal[ActiveWeapon].Damage);
 		}
 	}
@@ -410,7 +408,7 @@ AActor* ATP_ThirdPersonCharacter::TraceLineForward(float Distance) {
 	FVector Start = GetActorLocation();
 	FVector End = Start + (GetActorForwardVector() * Distance);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
-	DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, 3.0f);
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, 3.0f);
 
 	if (bHit) {
 		return Hit.Actor.Get();
