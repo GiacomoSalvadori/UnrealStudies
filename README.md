@@ -4,7 +4,7 @@
 https://youtu.be/f4ycd2qHB1Y
 
 <div>
-	<img src="_docs/img/UE4_TPS.png" width="380"  style="align: left" hspace="20">
+	<img src="_docs/img/UE4_TPS.png"  style="align: left">
 </div>
 
 ## Introduction
