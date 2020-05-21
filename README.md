@@ -3,6 +3,10 @@
 ## Video with results
 https://youtu.be/f4ycd2qHB1Y
 
+<div>
+	<img src="_docs/img/UE4_TPS.png" width="380"  style="align: left" hspace="20">
+</div>
+
 ## Introduction
 
 An UE4 project made for studying TPS mechanics. The project has no sounds implemented. Here the list of what I faced during the development.
