@@ -4,7 +4,7 @@
 https://youtu.be/f4ycd2qHB1Y
 
 <div>
-	<img src="_docs/img/UE4_TPS.png"  style="align: left">
+	<img src="_docs/img/UE4_TPS.png" style="align: left">
 </div>
 
 ## Introduction
@@ -29,6 +29,7 @@ An UE4 project made for studying TPS mechanics. The project has no sounds implem
 - **Reload**: R key || right shoulder RB
 
 ## Classes
+
 - **ATP_ThirdPersonCharacter**: this class implements the playable character. Based on the ATP_ThirdPersonCharacter class of the UE4 content pack
 
 - **AEnemy**: this class handles the mechanics implementation of the enemies
