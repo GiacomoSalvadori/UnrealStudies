@@ -4,8 +4,7 @@
 #include "WeaponSlot.h"
 
 
-FWeaponSlot::FWeaponSlot()
-{
+FWeaponSlot::FWeaponSlot() {
 	this->WeaponMesh = NULL;
 	this->MagCapacity = 10;
 	this->IsAutomatic = true;

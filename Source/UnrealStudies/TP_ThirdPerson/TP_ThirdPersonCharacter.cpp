@@ -13,8 +13,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ATP_ThirdPersonCharacter
 
-ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
-{
+ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter() {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -63,6 +62,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter()
 
 	//Set active weapon index
 	ActiveWeapon = 0;
+	ActiveThrowable = 0;
 	ActualEight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	bIsAiming = false;
 }
@@ -133,8 +133,7 @@ void ATP_ThirdPersonCharacter::HandleProgressCrouch(float Height) {
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
+void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ATP_ThirdPersonCharacter::JumpCharacter);
@@ -144,8 +143,11 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATP_ThirdPersonCharacter::StopCrouchCharacter);
 	*/
 
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimIn);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOut);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimInWeapon);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOutWeapon);
+
+	PlayerInputComponent->BindAction("AimArch", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimInArch);
+	PlayerInputComponent->BindAction("AimArch", IE_Released, this, &ATP_ThirdPersonCharacter::AimOutArch);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATP_ThirdPersonCharacter::Fire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATP_ThirdPersonCharacter::StopFire);
@@ -166,7 +168,33 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATP_ThirdPersonCharacter::LookUpAtRate);
 }
 
-void ATP_ThirdPersonCharacter::AimIn(){
+void ATP_ThirdPersonCharacter::AimInArch() {
+	if (!bIsUsingWeapon) {
+		bIsUsingArch = true;
+		AimIn();
+		WeaponMesh->SetStaticMesh(Throwables[ActiveThrowable].WeaponMesh);
+	}
+}
+
+void ATP_ThirdPersonCharacter::AimOutArch() {
+	bIsUsingArch = false;
+	AimOut();
+	WeaponMesh->SetStaticMesh(Arsenal[ActiveWeapon].WeaponMesh);
+}
+
+void ATP_ThirdPersonCharacter::AimInWeapon() {
+	if (!bIsUsingArch) {
+		bIsUsingWeapon = true;
+		AimIn();
+	}
+}
+
+void ATP_ThirdPersonCharacter::AimOutWeapon() {
+	bIsUsingWeapon = false;
+	AimOut();
+}
+
+void ATP_ThirdPersonCharacter::AimIn() {
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim In"));
 	bUseControllerRotationYaw = true;
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -180,7 +208,7 @@ void ATP_ThirdPersonCharacter::AimIn(){
 	OnCharacterAim.Broadcast();
 }
 
-void ATP_ThirdPersonCharacter::AimOut(){
+void ATP_ThirdPersonCharacter::AimOut() {
 	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim Out"));
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -332,14 +360,18 @@ void ATP_ThirdPersonCharacter::AutomaticFire(float DeltaTime) {
 
 void ATP_ThirdPersonCharacter::Fire() {
 	if (!bIsReloading) {
-		bIsFiring = true;
-		FireTime = 0.0f;
-		if (MagBullets > 0) {
-			FireFromWeapon();
-			MagBullets--;
+		if (bIsUsingArch) {
+			StartThrow();
 		} else {
-			StopFire();
-			ReloadWeapon();
+			bIsFiring = true;
+			FireTime = 0.0f;
+			if (MagBullets > 0) {
+				FireFromWeapon();
+				MagBullets--;
+			} else {
+				StopFire();
+				ReloadWeapon();
+			}
 		}
 	}
 }
@@ -451,4 +483,20 @@ void ATP_ThirdPersonCharacter::StopCharacter() {
 	}
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	DisableInput(PlayerController);
+}
+
+bool ATP_ThirdPersonCharacter::IsAimingWithWeapon() {
+	return bIsAiming && bIsUsingWeapon;
+}
+
+bool ATP_ThirdPersonCharacter::IsAimingWithArch() {
+	return bIsAiming && bIsUsingArch;
+}
+
+void ATP_ThirdPersonCharacter::StartThrow() {
+	OnCharacterStartThrow.Broadcast();
+}
+
+void ATP_ThirdPersonCharacter::EndThrow() {
+	OnCharacterThrow.Broadcast();
 }

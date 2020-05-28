@@ -5,6 +5,7 @@
 #include "Engine.h"
 #include "Engine/EngineTypes.h"
 #include "../WeaponSlot.h"
+#include "../Throwable.h"
 #include "../Enemy.h"
 #include "../CoverActor.h"
 #include "../HealthComponent.h"
@@ -67,6 +68,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterTraceLine;
 
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterStartThrow;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameStateCharacter OnCharacterThrow;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -96,9 +103,13 @@ public:
 	//TArray<TSubclassOf<AWeapon>> Arsenal;
 	//TArray<class AWeapon*> Arsenal;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	TArray<FThrowable> Throwables;
 
 private:
 	int ActiveWeapon;
+
+	int ActiveThrowable;
 
 	int MagBullets;
 
@@ -115,6 +126,10 @@ private:
 	bool bIsFiring = false;
 
 	bool bIsReloading = false;
+
+	bool bIsUsingArch = false;
+
+	bool bIsUsingWeapon = false;
 	
 	FTimeline AimTimeline;
 
@@ -150,6 +165,12 @@ protected:
 
 	void AimIn();
 	void AimOut();
+
+	void AimInArch();
+	void AimOutArch();
+
+	void AimInWeapon();
+	void AimOutWeapon();
 
 	void ReloadWeapon();
 
@@ -197,17 +218,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	void EndReload();
 
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	void StartThrow();
+
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	void EndThrow();
+
 	/** Trace line in front of Character */
 	AActor* TraceLineForward(float Distance);
 
 	bool CheckAroundMe(float Radius, AActor* Looking);
+
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	bool IsAimingWithWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	bool IsAimingWithArch();
 
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	int MagCounter();
 
 	/** Inform the player that he's able to take cover in the provided actor */
 	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 
