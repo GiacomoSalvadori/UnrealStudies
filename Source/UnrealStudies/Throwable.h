@@ -13,22 +13,24 @@ struct FThrowable
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UStaticMesh *WeaponMesh;
+	UStaticMesh *WeaponMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int MaxCapacity;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Damage;
-
+	int MaxCapacity;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float DamageRadius;
+	float TimeForExplosion;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UParticleSystem* HitEFX;
+	float DamageRadius;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystem* HitEFX;
 
 	FThrowable();
 };

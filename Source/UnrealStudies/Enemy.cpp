@@ -82,7 +82,7 @@ void AEnemy::FireWithSphereSweep() {
 	
 	FCollisionQueryParams Params;
 	// Ignore the enemy's pawn
-	AActor* Myself = Cast<AEnemy>(this);
+	AActor* Myself = Cast<AActor>(this);
 	Params.AddIgnoredActor(Myself);
 
 	float WeaponRange = WeaponSlot.Range;

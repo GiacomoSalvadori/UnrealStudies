@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "../ActorThrowable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -74,7 +75,7 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 	FireTime = 0.0f;
 	FVector WeaponLocation = GetMesh()->GetSocketLocation("hand_rSocket");
 	FRotator WeaponRotaion = GetMesh()->GetSocketRotation("hand_rSocket");
-	FActorSpawnParameters SpawnParams;
+	
 	//AWeapon* WeaponObj = GetWorld()->SpawnActor<AWeapon>(AWeapon::StaticClass(), WeaponLocation, WeaponRotaion, SpawnParams);
 	//WeaponObj->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, "hand_rSocket");
 	//WeaponObj->Attachpa(GetMesh(), WeaponLocation);
@@ -499,4 +500,41 @@ void ATP_ThirdPersonCharacter::StartThrow() {
 
 void ATP_ThirdPersonCharacter::EndThrow() {
 	OnCharacterThrow.Broadcast();
+	FActorSpawnParameters SpawnParams;
+	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
+	FRotator ThrowRotator = FollowCamera->GetComponentRotation();
+	FVector OutVelocity = PredictThrowablePath();
+	AActorThrowable* ThrowedObj = GetWorld()->SpawnActor<AActorThrowable>(AActorThrowable::StaticClass(), ThrowStartLocation, ThrowRotator, SpawnParams);
+	ThrowedObj->Init(GetEquipThrowable(), OutVelocity);
+}
+
+FVector ATP_ThirdPersonCharacter::PredictThrowablePath() {
+	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
+	FVector ThrowEndLocation = ThrowStartLocation + (FollowCamera->GetForwardVector() * MaxThrowLength);
+	FVector OutVelocity;
+	UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(), OutVelocity, ThrowStartLocation, ThrowEndLocation, 0.0f, 0.5f);
+	
+	/* 
+	// Call arc path prediction
+	FHitResult Hit;
+	TArray<FVector> OutPath;
+	FVector LastPosition;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	TArray<AActor*> IgnoreList;
+	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
+	IgnoreList.Add(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)); // ignore myself
+	UGameplayStatics::Blueprint_PredictProjectilePath_ByObjectType(GetWorld(), Hit, OutPath, LastPosition, ThrowStartLocation, OutVelocity, false, 1.0f, ObjectTypes, false, IgnoreList, DrawDebugType, 0.0f);
+	int counter = 0;
+	for (auto& PathLocation : OutPath) {
+		if (counter > 9) {
+			DrawDebugSphere(GetWorld(), PathLocation, 10.0f, 12, FColor::Yellow, false, 0.2f);
+		}
+		counter++;
+	}
+	*/
+	return OutVelocity;
+}
+
+FThrowable ATP_ThirdPersonCharacter::GetEquipThrowable() {
+	return Throwables[ActiveThrowable];
 }

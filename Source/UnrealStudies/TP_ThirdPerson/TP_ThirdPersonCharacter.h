@@ -41,6 +41,7 @@ class ATP_ThirdPersonCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
 
+
 public:
 	ATP_ThirdPersonCharacter();
 
@@ -88,6 +89,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Aim")
 	float ActualEight = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
+	float MaxThrowLength = 1300.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* MovementCurve;
@@ -154,6 +158,7 @@ private:
 	void FireFromWeapon();
 
 	void AutomaticFire(float DeltaTime);
+
 
 protected:
 	
@@ -227,6 +232,9 @@ public:
 	/** Trace line in front of Character */
 	AActor* TraceLineForward(float Distance);
 
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	FThrowable GetEquipThrowable();
+
 	bool CheckAroundMe(float Radius, AActor* Looking);
 
 	UFUNCTION(BlueprintCallable, Category = "TPS")
@@ -237,6 +245,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	int MagCounter();
+
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	FVector PredictThrowablePath();
 
 	/** Inform the player that he's able to take cover in the provided actor */
 	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
