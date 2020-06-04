@@ -14,4 +14,5 @@ FWeaponSlot::FWeaponSlot() {
 	this->HitRadius = 50.0f;
 	this->Offset = 55.0f;
 	this->HitEFX = NULL;
+	this->SoundEFX = NULL;
 }

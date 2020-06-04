@@ -98,6 +98,7 @@ void AEnemy::FireWithSphereSweep() {
 
 	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Pawn, CollShape, Params);
 	//DrawDebugCylinder(GetWorld(), Start, End, WeaponRadius, 12, FColor::Orange, false, 3.0f);
+	OnCharacterTraceLine.Broadcast();
 
 	if (bHit) {
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponSlot.HitEFX, Hit.ImpactPoint);

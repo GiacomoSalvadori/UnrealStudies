@@ -249,6 +249,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	FVector PredictThrowablePath();
 
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	FWeaponSlot RetrieveActiveWeapon();
+
 	/** Inform the player that he's able to take cover in the provided actor */
 	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
 	

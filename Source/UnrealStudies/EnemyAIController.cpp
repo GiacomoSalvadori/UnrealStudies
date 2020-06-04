@@ -19,8 +19,13 @@ AEnemyAIController::AEnemyAIController() {
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	SightConfig->PeripheralVisionAngleDegrees = 45.0f;
 	SightConfig->AutoSuccessRangeFromLastSeenLocation = 1600.0f;
+
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
+	HearingConfig->HearingRange = 3000.0f;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	
 	PerceptionComponent->ConfigureSense(*SightConfig);
+	PerceptionComponent->ConfigureSense(*HearingConfig);
 	PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
@@ -33,6 +38,7 @@ void AEnemyAIController::BeginPlay() {
 
 	if (ControlledPawn) {
 		ControlledPawn->HealthComponent->OnHealtToZero.AddDynamic(this, &AEnemyAIController::StopAI);
+		// Detect player if hit by gun
 		ControlledPawn->HealthComponent->OnGetDamage.AddDynamic(this, &AEnemyAIController::DetectPlayer);
 		GetBlackboardComponent()->SetValueAsFloat("OriginalWalkSpeed", ControlledPawn->GetCharacterMovement()->MaxWalkSpeed);
 	}

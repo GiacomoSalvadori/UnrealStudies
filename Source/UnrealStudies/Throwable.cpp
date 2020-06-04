@@ -9,4 +9,5 @@ FThrowable::FThrowable() {
 	this->Damage = 100.0f;
 	this->DamageRadius = 100.0f;
 	this->HitEFX = NULL;
+	this->SoundEFX = NULL;
 }

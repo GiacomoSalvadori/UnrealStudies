@@ -538,3 +538,7 @@ FVector ATP_ThirdPersonCharacter::PredictThrowablePath() {
 FThrowable ATP_ThirdPersonCharacter::GetEquipThrowable() {
 	return Throwables[ActiveThrowable];
 }
+
+FWeaponSlot ATP_ThirdPersonCharacter::RetrieveActiveWeapon() {
+	return Arsenal[ActiveWeapon];
+}

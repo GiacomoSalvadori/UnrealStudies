@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "Sound/SoundBase.h"
 #include "WeaponSlot.generated.h"
 
 /**
@@ -40,6 +41,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystem* HitEFX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* SoundEFX;
 
 	FWeaponSlot();
 };

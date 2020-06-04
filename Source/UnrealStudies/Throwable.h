@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "Sound/SoundBase.h"
 #include "Throwable.generated.h"
 
 /**
@@ -31,6 +32,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystem* HitEFX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* SoundEFX;
 
 	FThrowable();
 };
