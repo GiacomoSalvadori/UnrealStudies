@@ -412,9 +412,11 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 }
 
 void ATP_ThirdPersonCharacter::ReloadWeapon() {
-	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Red, TEXT("Start Reload!"));
-	bIsReloading = true;
-	OnCharacterStartReload.Broadcast();
+	if (!bIsUsingArch) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Red, TEXT("Start Reload!"));
+		bIsReloading = true;
+		OnCharacterStartReload.Broadcast();
+	}
 }
 
 void ATP_ThirdPersonCharacter::EndReload() {
@@ -438,7 +440,6 @@ AActor* ATP_ThirdPersonCharacter::TraceLineForward(float Distance) {
 	FVector Start = GetActorLocation();
 	FVector End = Start + (GetActorForwardVector() * Distance);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
-	//DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, 3.0f);
 
 	if (bHit) {
 		return Hit.Actor.Get();

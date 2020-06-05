@@ -22,7 +22,13 @@ AEnemyAIController::AEnemyAIController() {
 	SightConfig->PeripheralVisionAngleDegrees = 45.0f;
 	SightConfig->AutoSuccessRangeFromLastSeenLocation = 1600.0f;
 
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
+	HearingConfig->HearingRange = 3000.0f;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
 	PerceptionComponent->ConfigureSense(*SightConfig);
+	PerceptionComponent->ConfigureSense(*HearingConfig);
 	PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
@@ -72,14 +78,20 @@ void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*
 		
 		if (PlayerCharacter) {
 			const FActorPerceptionInfo* ActorInfo = PerceptionComponent->GetActorInfo(*Actor);
-			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Blue, TEXT("Actor find -> " + Actor->GetFullName()));
-
+			
 			FAISenseID SightID = SightConfig->GetSenseID();
 
 			if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) {
 				if (ActorInfo->LastSensedStimuli[SightID].WasSuccessfullySensed()) {
-					GEngine->AddOnScreenDebugMessage(-1, 12.2f, FColor::Black, TEXT("Actor-> " + Actor->GetFullName()));
 					ManageSight();
+				}
+			}
+
+			FAISenseID HearingID = HearingConfig->GetSenseID();
+
+			if (ActorInfo->LastSensedStimuli.IsValidIndex(HearingID)) {
+				if (ActorInfo->LastSensedStimuli[HearingID].WasSuccessfullySensed()) {
+					ManageHearing();
 				}
 			}
 		}
@@ -87,6 +99,10 @@ void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*
 }
 
 void AEnemyAIController::ManageSight(){
+	DetectPlayer();
+}
+
+void AEnemyAIController::ManageHearing(){
 	DetectPlayer();
 }
 

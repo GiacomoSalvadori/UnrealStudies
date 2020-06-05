@@ -42,6 +42,10 @@ protected:
 private:
 	UAISenseConfig_Sight* SightConfig;
 
+	UAISenseConfig_Hearing* HearingConfig;
+
 	void ManageSight();
+
+	void ManageHearing();
 
 };
