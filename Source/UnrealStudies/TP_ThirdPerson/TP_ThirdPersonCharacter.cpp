@@ -17,7 +17,7 @@
 ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter() {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
+	
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -71,6 +71,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter() {
 void ATP_ThirdPersonCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	bCanMove = true;
 	MagBullets = Arsenal[ActiveWeapon].MagCapacity;
 	FireTime = 0.0f;
 	FVector WeaponLocation = GetMesh()->GetSocketLocation("hand_rSocket");
@@ -223,22 +224,19 @@ void ATP_ThirdPersonCharacter::AimOut() {
 	OnCharacterStopAim.Broadcast();
 }
 
-void ATP_ThirdPersonCharacter::TurnAtRate(float Rate)
-{
+void ATP_ThirdPersonCharacter::TurnAtRate(float Rate) {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
-void ATP_ThirdPersonCharacter::LookUpAtRate(float Rate)
-{
+void ATP_ThirdPersonCharacter::LookUpAtRate(float Rate) {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 
-void ATP_ThirdPersonCharacter::MoveForward(float Value)
-{
-	if ((Controller != NULL) && (Value != 0.0f) & !bIsInCover) {
+void ATP_ThirdPersonCharacter::MoveForward(float Value) {
+	if ((Controller != NULL) && (Value != 0.0f) & !bIsInCover && bCanMove) {
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -249,9 +247,8 @@ void ATP_ThirdPersonCharacter::MoveForward(float Value)
 	}
 }
 
-void ATP_ThirdPersonCharacter::MoveRight(float Value)
-{
-	if ( (Controller != NULL) && (Value != 0.0f) ) {
+void ATP_ThirdPersonCharacter::MoveRight(float Value) {
+	if ((Controller != NULL) && (Value != 0.0f) && bCanMove) {
 		if (!bIsInCover) {
 			// find out which way is right
 			const FRotator Rotation = Controller->GetControlRotation();
@@ -482,8 +479,22 @@ void ATP_ThirdPersonCharacter::StopCharacter() {
 	if (bIsAiming) {
 		AimOut();
 	}
+	
+	EnablePlayerInput(false);
+}
+
+void ATP_ThirdPersonCharacter::EnablePlayerInput(bool Enabled) {
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	DisableInput(PlayerController);
+
+	if (Enabled) {
+		EnableInput(PlayerController);
+	} else {
+		DisableInput(PlayerController);
+	}
+}
+
+void ATP_ThirdPersonCharacter::EnableMovement(bool Enabled) {
+	bCanMove = Enabled;
 }
 
 bool ATP_ThirdPersonCharacter::IsAimingWithWeapon() {
@@ -496,10 +507,15 @@ bool ATP_ThirdPersonCharacter::IsAimingWithArch() {
 
 void ATP_ThirdPersonCharacter::StartThrow() {
 	OnCharacterStartThrow.Broadcast();
+	EnableMovement(false);
 }
 
 void ATP_ThirdPersonCharacter::EndThrow() {
 	OnCharacterThrow.Broadcast();
+	EnableMovement(true);
+}
+
+void ATP_ThirdPersonCharacter::ThrowObject() {
 	FActorSpawnParameters SpawnParams;
 	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
 	FRotator ThrowRotator = FollowCamera->GetComponentRotation();

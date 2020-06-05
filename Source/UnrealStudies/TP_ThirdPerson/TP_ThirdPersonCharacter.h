@@ -134,6 +134,8 @@ private:
 	bool bIsUsingArch = false;
 
 	bool bIsUsingWeapon = false;
+
+	bool bCanMove = false;
 	
 	FTimeline AimTimeline;
 
@@ -154,6 +156,10 @@ private:
 
 	UFUNCTION()
 	void StopCharacter();
+	
+	void EnablePlayerInput(bool Enabled);
+
+	void EnableMovement(bool Enabled);
 
 	void FireFromWeapon();
 
@@ -228,6 +234,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	void EndThrow();
+
+	UFUNCTION(BlueprintCallable, Category = "TPS")
+	void ThrowObject();
 
 	/** Trace line in front of Character */
 	AActor* TraceLineForward(float Distance);

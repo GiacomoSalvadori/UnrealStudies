@@ -56,6 +56,8 @@ void AEnemyAIController::StopAI() {
 		ControlledPawn->GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 		ControlledPawn->HealthComponent->OnHealtToZero.RemoveDynamic(this, &AEnemyAIController::StopAI);
 		ControlledPawn->HealthComponent->OnGetDamage.RemoveDynamic(this, &AEnemyAIController::DetectPlayer);
+		ControlledPawn->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ControlledPawn->WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 	Destroy();
 }
