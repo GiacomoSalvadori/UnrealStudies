@@ -3,6 +3,7 @@
 
 #include "EnemyAIController.h"
 #include "Enemy.h"
+#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 #include "HealthComponent.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -11,6 +12,7 @@ AEnemyAIController::AEnemyAIController() {
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Set AI perception
+	
 	PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI Perception"));
 	
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
@@ -20,18 +22,13 @@ AEnemyAIController::AEnemyAIController() {
 	SightConfig->PeripheralVisionAngleDegrees = 45.0f;
 	SightConfig->AutoSuccessRangeFromLastSeenLocation = 1600.0f;
 
-	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
-	HearingConfig->HearingRange = 3000.0f;
-	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
-	
 	PerceptionComponent->ConfigureSense(*SightConfig);
-	PerceptionComponent->ConfigureSense(*HearingConfig);
 	PerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
 void AEnemyAIController::BeginPlay() {
 	Super::BeginPlay();
-	
+
 	RunBehaviorTree(BehaviourTree);
 	// Inscribe to delegate to stop behaviour tree when the pawn die
 	AEnemy* ControlledPawn = Cast<AEnemy>(GetPawn());
@@ -69,13 +66,19 @@ void AEnemyAIController::DetectPlayer() {
 
 void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*>& UpdateActors) {
 	for (auto& Actor : UpdateActors) {
-		const FActorPerceptionInfo* ActorInfo = PerceptionComponent->GetActorInfo(*Actor);
+		ATP_ThirdPersonCharacter* PlayerCharacter = Cast<ATP_ThirdPersonCharacter>(Actor);
 		
-		FAISenseID SightID = SightConfig->GetSenseID();
-		if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) {
-			if (ActorInfo->LastSensedStimuli[SightID].WasSuccessfullySensed()) {
-				GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Black, TEXT("Actor-> " + Actor->GetFullName()));
-				ManageSight();
+		if (PlayerCharacter) {
+			const FActorPerceptionInfo* ActorInfo = PerceptionComponent->GetActorInfo(*Actor);
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Blue, TEXT("Actor find -> " + Actor->GetFullName()));
+
+			FAISenseID SightID = SightConfig->GetSenseID();
+
+			if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) {
+				if (ActorInfo->LastSensedStimuli[SightID].WasSuccessfullySensed()) {
+					GEngine->AddOnScreenDebugMessage(-1, 12.2f, FColor::Black, TEXT("Actor-> " + Actor->GetFullName()));
+					ManageSight();
+				}
 			}
 		}
 	}
