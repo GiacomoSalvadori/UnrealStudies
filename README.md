@@ -16,7 +16,7 @@ An UE4 project made for studying TPS mechanics. The project has only the player'
 - Animator: work with blendspace, FSM animation, also work with timeline from C++ code
 - Implementing TPS mechanics: walk, move camera, aim on the shoulder, cover system, reload, shooting, grenade arch prediction
 - Implementing AI with Behaviour tree. In this project I made two kinds of Enemy:
-	- The Enemy with red skin who follows the player character and attacks from close
+	- The Enemy with red skin who chases the player character and attacks from close
 	- The Enemy with blue skin attacks from long range and uses the covers on the battlefield
 	
 ## Input
