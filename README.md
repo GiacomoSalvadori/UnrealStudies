@@ -9,12 +9,12 @@ https://youtu.be/f4ycd2qHB1Y
 
 ## Introduction
 
-An UE4 project made for studying TPS mechanics. The project has no sounds implemented. Here the list of what I faced during the development.
+An UE4 project made for studying TPS mechanics. The project has only the player's rifle sound implemented. Here the list of what I faced during the development.
 
 - C++ with UE4: a focus on UE4 classes like Pawn, Actor, ActorComponent, Character, AIController
 - Delegates and how to bind them in Blueprint
 - Animator: work with blendspace, FSM animation, also work with timeline from C++ code
-- Implementing TPS mechanics: walk, move camera, aim on the shoulder, cover system, reload, shooting
+- Implementing TPS mechanics: walk, move camera, aim on the shoulder, cover system, reload, shooting, grenade arch prediction
 - Implementing AI with Behaviour tree. In this project I made two kinds of Enemy:
 	- An Enemy who follows the player character and attacks from close
 	- An Enemy who attacks from long range and uses the covers on the battlefield
@@ -24,6 +24,7 @@ An UE4 project made for studying TPS mechanics. The project has no sounds implem
 - **Walk**: WASD || left stick
 - **Camera**: mouse movement || right stick
 - **Aim**: mouse right click || left trigger LT
+- **Aim Grenade**: X key || left shoulder LB
 - **Shoot**: mouse left click || right trigger RT
 - **Cover**: C key || X button
 - **Reload**: R key || right shoulder RB
@@ -34,7 +35,7 @@ An UE4 project made for studying TPS mechanics. The project has no sounds implem
 
 - **AEnemy**: this class handles the mechanics implementation of the enemies
 
-- **AAIController**: this class implements the sight sense of the enemies. It runs automatically the given behaviour tree. Behaviour trees are made with the Blueprint tools of UE4
+- **AAIController**: this class implements the sight and hearing senses of the enemies. It runs automatically the given behaviour tree. Behaviour trees are made with the Blueprint tools of UE4.
 
 - **ACoverActor**: this class implements the covers for the all the Characters in scene
 
