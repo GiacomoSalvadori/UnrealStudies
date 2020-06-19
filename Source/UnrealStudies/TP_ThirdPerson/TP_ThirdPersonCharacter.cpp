@@ -45,12 +45,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter() {
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-	
-	//Create a child actor component
-	//WeaponComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("WeaponComponent"));
-	//WeaponComponent->SetupAttachment(RootComponent);
-	//UWorld* w = GetWorld();
-	
+		
 	// Add a mesh for the weapon
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "hand_rSocket");
@@ -61,7 +56,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter() {
 	//Add component for Health management
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 
-	//Set active weapon index
+	//Set other variabled
 	ActiveWeapon = 0;
 	ActiveThrowable = 0;
 	ActualEight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -77,10 +72,6 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 	FVector WeaponLocation = GetMesh()->GetSocketLocation("hand_rSocket");
 	FRotator WeaponRotaion = GetMesh()->GetSocketRotation("hand_rSocket");
 	
-	//AWeapon* WeaponObj = GetWorld()->SpawnActor<AWeapon>(AWeapon::StaticClass(), WeaponLocation, WeaponRotaion, SpawnParams);
-	//WeaponObj->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform, "hand_rSocket");
-	//WeaponObj->Attachpa(GetMesh(), WeaponLocation);
-
 	MaxSpeedWalkingOrig = GetCharacterMovement()->MaxWalkSpeed;
 	if (MovementCurve && OffsetCurve) {
 		FOnTimelineFloat ProgressFunctionLength;
@@ -103,8 +94,7 @@ void ATP_ThirdPersonCharacter::BeginPlay() {
 	HealthComponent->OnHealtToZero.AddDynamic(this, &ATP_ThirdPersonCharacter::StopCharacter);
 }
 
-void ATP_ThirdPersonCharacter::OnConstruction(const FTransform & Transform)
-{
+void ATP_ThirdPersonCharacter::OnConstruction(const FTransform & Transform) {
 	if (Arsenal.Num() > 0) {
 		WeaponMesh->SetStaticMesh(Arsenal[0].WeaponMesh);
 	}
@@ -119,6 +109,9 @@ void ATP_ThirdPersonCharacter::Tick(float DeltaTime) {
 	
 	AutomaticFire(DeltaTime);
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Timeline management
 
 void ATP_ThirdPersonCharacter::HandleProgressArmLength(float Length) {
 	CameraBoom->TargetArmLength = Length;
@@ -140,11 +133,7 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ATP_ThirdPersonCharacter::JumpCharacter);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ATP_ThirdPersonCharacter::StopJumpingCharacter);
-	/*
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ATP_ThirdPersonCharacter::CrouchCharacter);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATP_ThirdPersonCharacter::StopCrouchCharacter);
-	*/
-
+	
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATP_ThirdPersonCharacter::AimInWeapon);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATP_ThirdPersonCharacter::AimOutWeapon);
 
@@ -170,59 +159,8 @@ void ATP_ThirdPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATP_ThirdPersonCharacter::LookUpAtRate);
 }
 
-void ATP_ThirdPersonCharacter::AimInArch() {
-	if (!bIsUsingWeapon) {
-		bIsUsingArch = true;
-		AimIn();
-		WeaponMesh->SetStaticMesh(Throwables[ActiveThrowable].WeaponMesh);
-	}
-}
-
-void ATP_ThirdPersonCharacter::AimOutArch() {
-	bIsUsingArch = false;
-	AimOut();
-	WeaponMesh->SetStaticMesh(Arsenal[ActiveWeapon].WeaponMesh);
-}
-
-void ATP_ThirdPersonCharacter::AimInWeapon() {
-	if (!bIsUsingArch) {
-		bIsUsingWeapon = true;
-		AimIn();
-	}
-}
-
-void ATP_ThirdPersonCharacter::AimOutWeapon() {
-	bIsUsingWeapon = false;
-	AimOut();
-}
-
-void ATP_ThirdPersonCharacter::AimIn() {
-	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim In"));
-	bUseControllerRotationYaw = true;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedAiming;
-	bIsAiming = true;
-	if (bIsInCover) {
-		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim from cover"));
-		StopCrouchCharacter();
-	}
-	AimTimeline.Play();
-	OnCharacterAim.Broadcast();
-}
-
-void ATP_ThirdPersonCharacter::AimOut() {
-	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim Out"));
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalkingOrig;
-	bIsAiming = false;
-	if (bIsInCover) {
-		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Stop aim from cover"));
-		CrouchCharacter();
-	}
-	AimTimeline.Reverse();
-	OnCharacterStopAim.Broadcast();
-}
+//////////////////////////////////////////////////////////////////////////
+// Movement and rotation
 
 void ATP_ThirdPersonCharacter::TurnAtRate(float Rate) {
 	// calculate delta for this frame from the rate information
@@ -265,6 +203,65 @@ void ATP_ThirdPersonCharacter::MoveRight(float Value) {
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Aim
+
+void ATP_ThirdPersonCharacter::AimInWeapon() {
+	if (!bIsUsingArch) {
+		bIsUsingWeapon = true;
+		AimIn();
+	}
+}
+
+void ATP_ThirdPersonCharacter::AimOutWeapon() {
+	bIsUsingWeapon = false;
+	AimOut();
+}
+
+void ATP_ThirdPersonCharacter::AimInArch() {
+	if (!bIsUsingWeapon) {
+		bIsUsingArch = true;
+		AimIn();
+		WeaponMesh->SetStaticMesh(Throwables[ActiveThrowable].WeaponMesh);
+	}
+}
+
+void ATP_ThirdPersonCharacter::AimOutArch() {
+	bIsUsingArch = false;
+	AimOut();
+	WeaponMesh->SetStaticMesh(Arsenal[ActiveWeapon].WeaponMesh);
+}
+
+void ATP_ThirdPersonCharacter::AimIn() {
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim In"));
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedAiming;
+	bIsAiming = true;
+	if (bIsInCover) {
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim from cover"));
+		StopCrouchCharacter();
+	}
+	AimTimeline.Play();
+	OnCharacterAim.Broadcast();
+}
+
+void ATP_ThirdPersonCharacter::AimOut() {
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Aim Out"));
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxWalkSpeed = MaxSpeedWalkingOrig;
+	bIsAiming = false;
+	if (bIsInCover) {
+		GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("Stop aim from cover"));
+		CrouchCharacter();
+	}
+	AimTimeline.Reverse();
+	OnCharacterStopAim.Broadcast();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Jump
 
 void ATP_ThirdPersonCharacter::JumpCharacter() {
 	if (CanJump()) {
@@ -276,6 +273,20 @@ void ATP_ThirdPersonCharacter::JumpCharacter() {
 void ATP_ThirdPersonCharacter::StopJumpingCharacter() {
 	StopJumping();
 }
+
+void ATP_ThirdPersonCharacter::Landed(const FHitResult& Hit) {
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("landed"));
+	OnCharacterLanding.Broadcast();
+}
+
+/** This is a UE4 function of AActor class*/
+void ATP_ThirdPersonCharacter::OnJumped_Implementation() { 
+	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("On jumped"));
+	OnCharacterJumping.Broadcast();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Crouch
 
 void ATP_ThirdPersonCharacter::CrouchCharacter() {
 	
@@ -296,15 +307,8 @@ void ATP_ThirdPersonCharacter::StopCrouchCharacter() {
 	}
 }
 
-void ATP_ThirdPersonCharacter::Landed(const FHitResult& Hit) {
-	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("landed"));
-	OnCharacterLanding.Broadcast();
-}
-
-void ATP_ThirdPersonCharacter::OnJumped_Implementation() {
-	GEngine->AddOnScreenDebugMessage(-1, 0.2f, FColor::Green, TEXT("On jumped"));
-	OnCharacterJumping.Broadcast();
-}
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Fire with weapon
 
 void ATP_ThirdPersonCharacter::FireFromWeapon() {
 	FCollisionQueryParams Params;
@@ -379,6 +383,13 @@ void ATP_ThirdPersonCharacter::StopFire() {
 	FireTime = 0.0f;
 }
 
+FWeaponSlot ATP_ThirdPersonCharacter::RetrieveActiveWeapon() {
+	return Arsenal[ActiveWeapon];
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Cover
+
 void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* CoverActor) {
 	if (!CanTakeCover && bIsInCover) {
 		ToggleCover();
@@ -388,8 +399,7 @@ void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* C
 	Cover = CoverActor;
 }
 
-void ATP_ThirdPersonCharacter::ToggleCover()
-{
+void ATP_ThirdPersonCharacter::ToggleCover() {
 	bool IsNear = CheckAroundMe(80.0f, Cover);
 	if (bCanTakeCover && IsNear) {
 		bIsInCover = !bIsInCover;
@@ -411,27 +421,9 @@ void ATP_ThirdPersonCharacter::ToggleCover()
 	}
 }
 
-void ATP_ThirdPersonCharacter::ReloadWeapon() {
-	if (!bIsUsingArch) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Red, TEXT("Start Reload!"));
-		bIsReloading = true;
-		OnCharacterStartReload.Broadcast();
-	}
-}
-
-void ATP_ThirdPersonCharacter::EndReload() {
-	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Orange, TEXT("End Reload!"));
-	bIsReloading = false;
-	MagBullets = Arsenal[ActiveWeapon].MagCapacity;
-}
-
-int ATP_ThirdPersonCharacter::MagCounter() {
-	return MagBullets;
-}
-
 AActor* ATP_ThirdPersonCharacter::TraceLineForward(float Distance) {
 	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));	
+	Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
 	// The hit result gets populated by the line trace
 	FHitResult Hit;
@@ -475,6 +467,66 @@ bool ATP_ThirdPersonCharacter::CheckAroundMe(float Radius, AActor* Looking) {
 	return false;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Reload
+
+void ATP_ThirdPersonCharacter::ReloadWeapon() {
+	if (!bIsUsingArch) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Red, TEXT("Start Reload!"));
+		bIsReloading = true;
+		OnCharacterStartReload.Broadcast();
+	}
+}
+
+void ATP_ThirdPersonCharacter::EndReload() {
+	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Orange, TEXT("End Reload!"));
+	bIsReloading = false;
+	MagBullets = Arsenal[ActiveWeapon].MagCapacity;
+}
+
+int ATP_ThirdPersonCharacter::MagCounter() {
+	return MagBullets;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Throw objects
+
+void ATP_ThirdPersonCharacter::StartThrow() {
+	OnCharacterStartThrow.Broadcast();
+	EnableMovement(false);
+}
+
+void ATP_ThirdPersonCharacter::EndThrow() {
+	OnCharacterThrow.Broadcast();
+	EnableMovement(true);
+}
+
+void ATP_ThirdPersonCharacter::ThrowObject() {
+	FActorSpawnParameters SpawnParams;
+	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
+	FRotator ThrowRotator = FollowCamera->GetComponentRotation();
+	FVector OutVelocity = PredictThrowablePath();
+	AActorThrowable* ThrowedObj = GetWorld()->SpawnActor<AActorThrowable>(AActorThrowable::StaticClass(), ThrowStartLocation, ThrowRotator, SpawnParams);
+	ThrowedObj->Init(GetEquipThrowable(), OutVelocity);
+}
+
+FVector ATP_ThirdPersonCharacter::PredictThrowablePath() {
+	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
+	FVector ThrowEndLocation = ThrowStartLocation + (FollowCamera->GetForwardVector() * MaxThrowLength);
+	FVector OutVelocity;
+	UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(), OutVelocity, ThrowStartLocation, ThrowEndLocation, 0.0f, 0.5f);
+
+	return OutVelocity;
+}
+
+FThrowable ATP_ThirdPersonCharacter::GetEquipThrowable() {
+	return Throwables[ActiveThrowable];
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Utilities
+
 void ATP_ThirdPersonCharacter::StopCharacter() {
 	HealthComponent->OnHealtToZero.RemoveDynamic(this, &ATP_ThirdPersonCharacter::StopCharacter);
 	if (bIsAiming) {
@@ -504,58 +556,4 @@ bool ATP_ThirdPersonCharacter::IsAimingWithWeapon() {
 
 bool ATP_ThirdPersonCharacter::IsAimingWithArch() {
 	return bIsAiming && bIsUsingArch;
-}
-
-void ATP_ThirdPersonCharacter::StartThrow() {
-	OnCharacterStartThrow.Broadcast();
-	EnableMovement(false);
-}
-
-void ATP_ThirdPersonCharacter::EndThrow() {
-	OnCharacterThrow.Broadcast();
-	EnableMovement(true);
-}
-
-void ATP_ThirdPersonCharacter::ThrowObject() {
-	FActorSpawnParameters SpawnParams;
-	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
-	FRotator ThrowRotator = FollowCamera->GetComponentRotation();
-	FVector OutVelocity = PredictThrowablePath();
-	AActorThrowable* ThrowedObj = GetWorld()->SpawnActor<AActorThrowable>(AActorThrowable::StaticClass(), ThrowStartLocation, ThrowRotator, SpawnParams);
-	ThrowedObj->Init(GetEquipThrowable(), OutVelocity);
-}
-
-FVector ATP_ThirdPersonCharacter::PredictThrowablePath() {
-	FVector ThrowStartLocation = FollowCamera->GetComponentLocation();
-	FVector ThrowEndLocation = ThrowStartLocation + (FollowCamera->GetForwardVector() * MaxThrowLength);
-	FVector OutVelocity;
-	UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(), OutVelocity, ThrowStartLocation, ThrowEndLocation, 0.0f, 0.5f);
-	
-	/* 
-	// Call arc path prediction
-	FHitResult Hit;
-	TArray<FVector> OutPath;
-	FVector LastPosition;
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	TArray<AActor*> IgnoreList;
-	EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
-	IgnoreList.Add(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)); // ignore myself
-	UGameplayStatics::Blueprint_PredictProjectilePath_ByObjectType(GetWorld(), Hit, OutPath, LastPosition, ThrowStartLocation, OutVelocity, false, 1.0f, ObjectTypes, false, IgnoreList, DrawDebugType, 0.0f);
-	int counter = 0;
-	for (auto& PathLocation : OutPath) {
-		if (counter > 9) {
-			DrawDebugSphere(GetWorld(), PathLocation, 10.0f, 12, FColor::Yellow, false, 0.2f);
-		}
-		counter++;
-	}
-	*/
-	return OutVelocity;
-}
-
-FThrowable ATP_ThirdPersonCharacter::GetEquipThrowable() {
-	return Throwables[ActiveThrowable];
-}
-
-FWeaponSlot ATP_ThirdPersonCharacter::RetrieveActiveWeapon() {
-	return Arsenal[ActiveWeapon];
 }

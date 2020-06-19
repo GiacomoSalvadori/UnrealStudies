@@ -45,33 +45,43 @@ class ATP_ThirdPersonCharacter : public ACharacter
 public:
 	ATP_ThirdPersonCharacter();
 
+	/** Broadcasted when character land on ground */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterLanding;
 
+	/** Broadcasted when character jump */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterJumping;
 	
+	/** Broadcasted when character crouching */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterCrouch;
 	
+	/** Broadcasted when character stop crouching */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterUncrouch;
 
+	/** Broadcasted when character start aiming */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterAim;
 
+	/** Broadcsted when character stop aiming */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterStopAim;
 
+	/** Broadcsted when character reloading the weapon */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterStartReload;
 
+	/** Broadcsted when character trace line from weapon */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterTraceLine;
 
+	/** Broadcsted when character start throwing movement */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterStartThrow;
 
+	/** Broadcsted when character literally throw something */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateCharacter OnCharacterThrow;
 
@@ -102,11 +112,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* CrouchCurve;
 	
+	/** This array contains all the character weapons*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
 	TArray<FWeaponSlot> Arsenal;
-	//TArray<TSubclassOf<AWeapon>> Arsenal;
-	//TArray<class AWeapon*> Arsenal;
 	
+	/** This array contains all the character throwables, like grenades*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapons")
 	TArray<FThrowable> Throwables;
 
@@ -137,12 +147,16 @@ private:
 
 	bool bCanMove = false;
 	
+	/** Timeline use for aiming: change the visual from 360 to right shoulder*/
 	FTimeline AimTimeline;
 
+	/** Timeline used to crouch character*/
 	FTimeline CrouchTimeline;
 
+	/** This variable stores the allowed movement while player is covering*/
 	FVector CoverDirectionMovement;
 
+	/** Pointer to cover*/
 	ACoverActor* Cover;
 
 	UFUNCTION()
@@ -161,30 +175,15 @@ private:
 
 	void EnableMovement(bool Enabled);
 
+	// Mechanic: Fire with weapon
 	void FireFromWeapon();
-
 	void AutomaticFire(float DeltaTime);
 
 
 protected:
-	
-	void JumpCharacter();
-	void StopJumpingCharacter();
+	virtual void OnConstruction(const FTransform& Transform) override;
 
-	void CrouchCharacter();
-	void StopCrouchCharacter();
-
-	void AimIn();
-	void AimOut();
-
-	void AimInArch();
-	void AimOutArch();
-
-	void AimInWeapon();
-	void AimOutWeapon();
-
-	void ReloadWeapon();
-
+	// Mechanic: Movement and rotation
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -202,21 +201,37 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
-
-	virtual void OnConstruction(const FTransform& Transform) override;
-
+	
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
 	
+	// Mechanic: Jump
+	void JumpCharacter();
+	void StopJumpingCharacter();
+
+	// Mechanic: Crouch
+	void CrouchCharacter();
+	void StopCrouchCharacter();
+
+	// Mechanic: Aim
+	void AimInWeapon();
+	void AimOutWeapon();
+	void AimInArch();
+	void AimOutArch();
+	void AimIn();
+	void AimOut();
+
+	// Mechanic: Reload
+	void ReloadWeapon();
 
 public:
+	
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void OnJumped_Implementation();
-
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaSeconds) override;
 
 	/** Called when the player try to fire with weapon */
 	void Fire();
@@ -254,7 +269,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	int MagCounter();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	FVector PredictThrowablePath();
 
