@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "HealthComponent.h"
 #include "ActorThrowable.h"
+#include "HealthComponent.h"
 
 // Sets default values
 AActorThrowable::AActorThrowable()
