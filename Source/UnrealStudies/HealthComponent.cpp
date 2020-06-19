@@ -3,14 +3,12 @@
 
 #include "HealthComponent.h"
 
-UHealthComponent::UHealthComponent()
-{
+UHealthComponent::UHealthComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
 
-void UHealthComponent::BeginPlay()
-{
+void UHealthComponent::BeginPlay() {
 	Super::BeginPlay();
 
 	HealthDefaultValue = Health;
@@ -21,8 +19,7 @@ void UHealthComponent::BeginPlay()
 }
 
 
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
+void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	AutoRecoveryHealth(DeltaTime);
@@ -64,13 +61,11 @@ void UHealthComponent::AutoRecoveryHealth(float DeltaTime) {
 		if (ElapsedTime >= HealthRecoveryTime) {
 			ElapsedTime = 0.0f;
 			Healing(RecoveryQuantity);
-			//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Time! %f - %f"), DeltaTime, Health));
 			OnHealthRecovery.Broadcast();
 		}		
 	}
 }
 
 float UHealthComponent::HealthPercentage() {
-
 	return HealthMaxValue == 0.0 ? 1.0f : (Health/HealthMaxValue);
 }

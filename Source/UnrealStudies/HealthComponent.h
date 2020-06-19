@@ -12,12 +12,10 @@ class UNREALSTUDIES_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
+public:
 	UHealthComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 private:
@@ -31,18 +29,20 @@ private:
 
 	void CheckDamageTime(float DeltaTime);
 
-public:	
-	// Called every frame
+public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	/** Brodcasted when the actor get damage */
 	UPROPERTY(BlueprintAssignable)
 	FHealtDelegate OnGetDamage;
 
+	/** Broadcasted when Health values is <= 0 */
 	UPROPERTY(BlueprintAssignable)
-	FHealtDelegate OnHealtToZero; // Called when Health values is <= 0
+	FHealtDelegate OnHealtToZero;
 
+	/** Broadcasted every time Health is recovered */
 	UPROPERTY(BlueprintAssignable)
-	FHealtDelegate OnHealthRecovery; // Called every time Health is recovered
+	FHealtDelegate OnHealthRecovery;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
 	float Health;
@@ -56,7 +56,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
 	float HealthRecoveryTime = 0.2f;
 
-	/** Time to wait after receive damage */
+	/** Time to wait for recovery to start after receiving damage */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Healt: variables")
 	float NoDamageTimeForRecovery = 2.5f;
 
@@ -66,6 +66,7 @@ public:
 
 	void Healing(float Amount);
 	
+	/** Retrieve the health percentage */
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float HealthPercentage();
 

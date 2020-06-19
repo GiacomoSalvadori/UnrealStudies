@@ -3,26 +3,19 @@
 
 #include "EnemyPath.h"
 
-// Sets default values
-AEnemyPath::AEnemyPath()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 
+AEnemyPath::AEnemyPath() {
+ 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
-void AEnemyPath::BeginPlay()
-{
+void AEnemyPath::BeginPlay() {
 	Super::BeginPlay();
 	
 	PathSense = 1;
 	PathIndex = 0;
 }
 
-// Called every frame
-void AEnemyPath::Tick(float DeltaTime)
-{
+void AEnemyPath::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 }

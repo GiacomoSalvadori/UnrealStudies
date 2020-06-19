@@ -40,8 +40,7 @@ void ACoverActor::BeginPlay() {
 //////////////////////////////////////////////////////////////////////////
 // Enable/Disable cover
 
-void ACoverActor::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
+void ACoverActor::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	if (OtherActor->IsA<ATP_ThirdPersonCharacter>())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("CAN cover!"));
@@ -50,8 +49,7 @@ void ACoverActor::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor
 	}
 }
 
-void ACoverActor::OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
+void ACoverActor::OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
 	if (OtherActor->IsA<ATP_ThirdPersonCharacter>())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("CAN not cover!"));
@@ -64,8 +62,7 @@ void ACoverActor::OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 //////////////////////////////////////////////////////////////////////////
 // Enable/Disable cover
 
-float ACoverActor::DistanceFromPlayer(FName SocketName)
-{
+float ACoverActor::DistanceFromPlayer(FName SocketName) {
 	FVector SocketLocation = SM->GetSocketLocation(SocketName);
 	FVector PlayerLocation = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetActorLocation();
 	float distance = FVector::Distance(SocketLocation, PlayerLocation);
@@ -73,8 +70,7 @@ float ACoverActor::DistanceFromPlayer(FName SocketName)
 	return distance;
 }
 
-FName ACoverActor::GetNearbySocket()
-{
+FName ACoverActor::GetNearbySocket() {
 	const FName AvailableSockets[12] =
 	{
 		FName("ForwardSocket_1"),
@@ -106,8 +102,7 @@ FName ACoverActor::GetNearbySocket()
 	return NearestSocket;
 }
 
-void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotator& FacingDirection)
-{
+void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotator& FacingDirection) {
 	FName NearbySocket = GetNearbySocket();
 	
 	//Determine the movement and facing direction of the player
@@ -136,8 +131,7 @@ void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotato
 }
 
 
-void ACoverActor::RetrieveMovementDirectionAndFacingRotation(FVector& MovementDirection, FRotator& FacingRotation)
-{
+void ACoverActor::RetrieveMovementDirectionAndFacingRotation(FVector& MovementDirection, FRotator& FacingRotation) {
 	DetermineMovementDirection(MovementDirection, FacingRotation);
 }
 

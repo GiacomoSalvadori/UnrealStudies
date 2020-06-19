@@ -19,22 +19,24 @@ public:
 	TArray<FVector> PathPoints;
 
 private:
+	/** Path sensen orientation, am I backtracking the path? */
 	int PathSense;
+	/** An integer representing the path index */
 	int PathIndex;
 
 protected:
 
 	virtual void BeginPlay() override;
-
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
-
 	virtual void Tick(float DeltaTime) override;
 
+	/** Set the index to next node */
 	UFUNCTION(BlueprintCallable, Category = "AI Path")
 	void GoNextNode();
 
+	/** Retrieve actual point */
 	UFUNCTION(BlueprintCallable, Category = "AI Path")
 	FVector ActualPoint();
 
