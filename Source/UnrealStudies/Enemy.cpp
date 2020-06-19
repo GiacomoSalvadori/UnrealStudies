@@ -6,8 +6,7 @@
 #include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 
 // Sets default values
-AEnemy::AEnemy()
-{
+AEnemy::AEnemy() {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -24,62 +23,29 @@ AEnemy::AEnemy()
 	
 	// Add Health manager
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
-
 }
 
-// Called when the game starts or when spawned
-void AEnemy::BeginPlay()
-{
-	Super::BeginPlay();
-	
+
+//////////////////////////////////////////////////////////////////////////
+// UE4 functions for game thread
+
+void AEnemy::BeginPlay() {
+	Super::BeginPlay();	
 }
 
-// Called every frame
-void AEnemy::Tick(float DeltaTime)
-{
+void AEnemy::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
 }
 
-void AEnemy::OnConstruction(const FTransform & Transform)
-{
+void AEnemy::OnConstruction(const FTransform & Transform) {
 	WeaponMesh->SetStaticMesh(WeaponSlot.WeaponMesh);
 	GetHealthComponent()->bAutoRecovery = false;
 }
 
-
-void AEnemy::FireWithWeapon() {
-
-	// You can use this to customize various properties about the trace
-	FCollisionQueryParams Params;
-	// Ignore the player's pawn
-	Params.AddIgnoredActor(this->GetParentActor());
-
-	// The hit result gets populated by the line trace
-	FHitResult Hit;
-
-	float WeaponRange = WeaponSlot.Range;
-
-	float WeaponOffset = WeaponSlot.Offset;
-	GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Blue, TEXT("AI Fire!"));
-	FVector Start = WeaponMesh->GetComponentLocation() + (WeaponMesh->GetForwardVector() * WeaponOffset);
-	FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
-	
-	if (bHit) {
-		DrawDebugLine(GetWorld(), Start, End, FColor::Black, false, 3.0f);
-
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponSlot.HitEFX, Hit.ImpactPoint);
-		//AEnemy* HitActor = Cast<AEnemy>(Hit.Actor.Get());
-		AActor* HitActor = Hit.Actor.Get();
-		
-		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("Hit! " + HitActor->GetName()));
-	}
-}
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Fire with weapon
 
 void AEnemy::FireWithSphereSweep() {
-	
 	FCollisionQueryParams Params;
 	// Ignore the enemy's pawn
 	AActor* Myself = Cast<AActor>(this);
@@ -88,16 +54,16 @@ void AEnemy::FireWithSphereSweep() {
 	float WeaponRange = WeaponSlot.Range;
 	float WeaponOffset = WeaponSlot.Offset;
 	float WeaponRadius = WeaponSlot.HitRadius;
+
 	FCollisionShape CollShape = FCollisionShape::MakeSphere(WeaponRadius);
+
 	FVector ZForward = FVector::UpVector * AimOffset;
 	FVector Start = WeaponMesh->GetComponentLocation()+ ZForward + (WeaponMesh->GetForwardVector() * WeaponOffset);
-	//FVector End = Start + (WeaponMesh->GetComponentRotation().Vector() * WeaponRange);
 	FVector End = Start + (GetActorForwardVector() * WeaponRange);
 
 	FHitResult Hit;
 
 	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Pawn, CollShape, Params);
-	//DrawDebugCylinder(GetWorld(), Start, End, WeaponRadius, 12, FColor::Orange, false, 3.0f);
 	OnCharacterTraceLine.Broadcast();
 
 	if (bHit) {
@@ -109,10 +75,23 @@ void AEnemy::FireWithSphereSweep() {
 			HitPlayer->GetHealthComponent()->GetDamage(WeaponSlot.Damage);
 		} else {
 			GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("Hit! " + Hit.Actor.Get()->GetName()));
-		}
-		
+		}		
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Aim
+
+void AEnemy::AimIn() {
+	OnCharacterAim.Broadcast();
+}
+
+void AEnemy::AimOut() {
+	OnCharacterStopAim.Broadcast();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Mechanic: Crouch
 
 void AEnemy::CrouchMe() {
 	if (CanCrouch()) {
@@ -125,12 +104,4 @@ void AEnemy::UncrouchMe() {
 	GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Orange, TEXT("Enemy uncrouch!"));
 	UnCrouch();
 	OnCharacterUncrouch.Broadcast();
-}
-
-void AEnemy::AimIn() {
-	OnCharacterAim.Broadcast();
-}
-
-void AEnemy::AimOut() {
-	OnCharacterStopAim.Broadcast();
 }

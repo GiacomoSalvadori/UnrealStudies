@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Enemy.generated.h"
 
+/** Delegate used to notify character actions */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameStateEnemy);
 UCLASS()
 class UNREALSTUDIES_API AEnemy : public ACharacter
@@ -19,14 +20,14 @@ public:
 	// Sets default values for this character's properties
 	AEnemy();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* WeaponMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		float AimOffset = 60.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	float AimOffset = 60.0f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FWeaponSlot WeaponSlot;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
@@ -46,10 +47,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable, Category = "Damage")
-	void FireWithWeapon();
-
+	
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void FireWithSphereSweep();
 
@@ -65,27 +63,35 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cover")
 	void AimOut();
 
+	/** Broadcasted when character land on ground */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterLanding;
 
+	/** Broadcasted when character jump */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterJumping;
 
+	/** Broadcasted when character crouching */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterCrouch;
 
+	/** Broadcasted when character stop crouching */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterUncrouch;
 
+	/** Broadcasted when character start aiming */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterAim;
 
+	/** Broadcsted when character stop aiming */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterStopAim;
 
+	/** Broadcsted when character reloading the weapon */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterStartReload;
 
+	/** Broadcsted when character trace line from weapon */
 	UPROPERTY(BlueprintAssignable)
 	FGameStateEnemy OnCharacterTraceLine;
 	
