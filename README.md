@@ -9,7 +9,7 @@ https://youtu.be/pvggDGpotRY
 
 ## Introduction
 
-An UE4 project made for studying TPS mechanics. The project has only the player's rifle sound implemented. Here the list of what I faced during the development.
+An UE4 (version 4.24) project made for studying TPS mechanics. The project has only the player's rifle sound implemented. Here the list of what I faced during the development.
 
 - C++ with UE4: a focus on UE4 classes like Pawn, Actor, ActorComponent, Character, AIController
 - Delegates and how to bind them in Blueprint
