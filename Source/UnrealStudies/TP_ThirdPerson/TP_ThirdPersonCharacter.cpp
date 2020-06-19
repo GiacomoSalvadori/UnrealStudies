@@ -434,7 +434,7 @@ bool ATP_ThirdPersonCharacter::CheckAroundMe(float Radius) {
 	FVector Pos = GetCapsuleComponent()->GetComponentLocation();
 	bool bHit = GetWorld()->SweepMultiByChannel(Hit, Pos, Pos, FQuat::Identity, ECC_Pawn, CollShape, Params);
 	//DrawDebugSphere(GetWorld(), Pos, Radius, 12, FColor::Orange, false, 0.2f);
-
+	
 	if (bHit) {
 		for (auto& HitActor : Hit) {
 			ACoverActor* HitCover = Cast<ACoverActor>(HitActor.Actor.Get());

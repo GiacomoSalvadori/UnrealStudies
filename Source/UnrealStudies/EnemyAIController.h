@@ -21,6 +21,9 @@ class UNREALSTUDIES_API AEnemyAIController : public AAIController
 public:
 	AEnemyAIController();
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI: Team")
+	float TeammateAdviseRadius = 10000.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI: behaviour tree")
 	UBehaviorTree* BehaviourTree;
 	
@@ -51,5 +54,8 @@ private:
 
 	/** Function used to manege the hearing sense*/
 	void ManageHearing();
+
+	/** Notify teammate located in a radius equal to TeammateAdviseRadius */
+	void NotifyTeammate();
 
 };

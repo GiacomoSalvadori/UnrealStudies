@@ -7,6 +7,7 @@
 #include "HealthComponent.h"
 #include "BrainComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "EngineUtils.h"
 
 AEnemyAIController::AEnemyAIController() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -55,7 +56,7 @@ void AEnemyAIController::BeginPlay() {
 void AEnemyAIController::StopAI() {
 	BrainComponent->StopLogic("Death");
 	AEnemy* ControlledPawn = Cast<AEnemy>(GetPawn());
-
+	
 	if (ControlledPawn) {
 		ControlledPawn->GetCharacterMovement()->MaxWalkSpeed = 0.0f;
 		ControlledPawn->HealthComponent->OnHealtToZero.RemoveDynamic(this, &AEnemyAIController::StopAI);
@@ -98,9 +99,20 @@ void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*
 
 void AEnemyAIController::ManageSight(){
 	DetectPlayer();
+	NotifyTeammate();
 }
 
 void AEnemyAIController::ManageHearing(){
 	DetectPlayer();
 }
 
+void AEnemyAIController::NotifyTeammate() {
+	FVector MyLocation = GetPawn()->GetActorLocation();
+	for (TActorIterator<AEnemyAIController> It(GetWorld()); It; ++It) {
+		AEnemyAIController* Teammate = *It;
+		FVector TeammateLocation = Teammate->GetPawn()->GetActorLocation();
+		if (FVector::Distance(MyLocation, TeammateLocation) < TeammateAdviseRadius) { // Advise teammate in a certain radius
+			Teammate->DetectPlayer(); // In this case teammate automatically detect player
+		}
+	}
+}
