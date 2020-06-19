@@ -21,42 +21,6 @@ ACoverActor::ACoverActor() {
 void ACoverActor::BeginPlay() {
 	Super::BeginPlay();
 
-	if (BoxComp) {
-		//Register overlap events
-		BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACoverActor::OnCompBeginOverlap);
-		BoxComp->OnComponentEndOverlap.AddDynamic(this, &ACoverActor::OnCompEndOverlap);
-		FVector BoxExtent = BoxComp->GetScaledBoxExtent();
-
-		FVector ActorMeshScale = SM->GetComponentScale();
-		BoxExtent /= ActorMeshScale;
-		BoxExtent.X += BoxCompOffset.X / ActorMeshScale.X;
-		BoxExtent.Y += BoxCompOffset.Y / ActorMeshScale.Y;
-		BoxExtent.Z += BoxCompOffset.Z / ActorMeshScale.Z;
-
-		BoxComp->SetBoxExtent(BoxExtent);
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Enable/Disable cover
-
-void ACoverActor::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
-	if (OtherActor->IsA<ATP_ThirdPersonCharacter>())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("CAN cover!"));
-		ATP_ThirdPersonCharacter* Char = Cast<ATP_ThirdPersonCharacter>(OtherActor);
-		Char->SetCanTakeCover(true, this);
-	}
-}
-
-void ACoverActor::OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
-	if (OtherActor->IsA<ATP_ThirdPersonCharacter>())
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.2f, FColor::Green, TEXT("CAN not cover!"));
-		//Inform the player that he isn't able to take cover
-		ATP_ThirdPersonCharacter* Char = Cast<ATP_ThirdPersonCharacter>(OtherActor);
-		Char->SetCanTakeCover(false, nullptr);
-	}
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -59,6 +59,7 @@ ATP_ThirdPersonCharacter::ATP_ThirdPersonCharacter() {
 	//Set other variabled
 	ActiveWeapon = 0;
 	ActiveThrowable = 0;
+	CheckCoverRadius = 60.0f;
 	ActualEight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	bIsAiming = false;
 }
@@ -198,7 +199,11 @@ void ATP_ThirdPersonCharacter::MoveRight(float Value) {
 			AddMovementInput(Direction, Value);
 		} else {
 			//Move according to the cover actor's position
-			AddMovementInput(CoverDirectionMovement, Value);
+			if (CheckAroundMe(CheckCoverRadius)) {
+				AddMovementInput(CoverDirectionMovement, Value);
+			} else {
+				ExitFromCover();
+			}
 		}
 	}
 }
@@ -390,24 +395,15 @@ FWeaponSlot ATP_ThirdPersonCharacter::RetrieveActiveWeapon() {
 //////////////////////////////////////////////////////////////////////////
 // Mechanic: Cover
 
-void ATP_ThirdPersonCharacter::SetCanTakeCover(bool CanTakeCover, ACoverActor* CoverActor) {
-	if (!CanTakeCover && bIsInCover) {
-		ToggleCover();
-	}
-
-	bCanTakeCover = CanTakeCover;
-	Cover = CoverActor;
-}
-
 void ATP_ThirdPersonCharacter::ToggleCover() {
-	bool IsNear = CheckAroundMe(80.0f, Cover);
-	if (bCanTakeCover && IsNear) {
+	bool bIsNear = CheckAroundMe(CheckCoverRadius);
+	if (bIsNear) { // Check if cover is near
 		bIsInCover = !bIsInCover;
 		// DEBUG message
 		if (bIsInCover) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Cover!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Cover now!"));
 		} else {
-			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover!"));
+			GEngine->AddOnScreenDebugMessage(-1, 2.2f, FColor::Green, TEXT("Not Cover now!"));
 		}
 		
 		if (bIsInCover && Cover) {			
@@ -416,50 +412,35 @@ void ATP_ThirdPersonCharacter::ToggleCover() {
 			SetActorRotation(CoverRotation);
 			CrouchCharacter();
 		} else {
-			StopCrouchCharacter();
+			ExitFromCover();
 		}
 	}
 }
 
-AActor* ATP_ThirdPersonCharacter::TraceLineForward(float Distance) {
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-
-	// The hit result gets populated by the line trace
-	FHitResult Hit;
-
-	// Raycast out from the camera, only collide with pawns (they are on the ECC_Pawn collision channel)
-	FVector Start = GetActorLocation();
-	FVector End = Start + (GetActorForwardVector() * Distance);
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, Params);
-
-	if (bHit) {
-		return Hit.Actor.Get();
-	}
-
-	return nullptr;
+void ATP_ThirdPersonCharacter::ExitFromCover() {
+	bIsInCover = false;
+	StopCrouchCharacter();
 }
 
 
-bool ATP_ThirdPersonCharacter::CheckAroundMe(float Radius, AActor* Looking) {
-	if (Looking != nullptr) {
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+bool ATP_ThirdPersonCharacter::CheckAroundMe(float Radius) {
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
-		FCollisionShape CollShape = FCollisionShape::MakeSphere(Radius);
-		// The hit result gets populated by the line trace
-		TArray<FHitResult> Hit;
+	FCollisionShape CollShape = FCollisionShape::MakeSphere(Radius);
 
-		// Raycast out from the camera, only collide with pawns (they are on the ECC_Pawn collision channel)
-		FVector Pos = GetCapsuleComponent()->GetComponentLocation();
-		bool bHit = GetWorld()->SweepMultiByChannel(Hit, Pos, Pos, FQuat::Identity, ECC_Pawn, CollShape, Params);
-		//DrawDebugSphere(GetWorld(), Pos, Radius, 12, FColor::Orange, false, 3.0f);
+	TArray<FHitResult> Hit;
 
-		if (bHit) {
-			for (auto& HitActor : Hit) {
-				if (HitActor.Actor.Get() == Looking) {
-					return true;
-				}
+	FVector Pos = GetCapsuleComponent()->GetComponentLocation();
+	bool bHit = GetWorld()->SweepMultiByChannel(Hit, Pos, Pos, FQuat::Identity, ECC_Pawn, CollShape, Params);
+	//DrawDebugSphere(GetWorld(), Pos, Radius, 12, FColor::Orange, false, 0.2f);
+
+	if (bHit) {
+		for (auto& HitActor : Hit) {
+			ACoverActor* HitCover = Cast<ACoverActor>(HitActor.Actor.Get());
+			if (HitCover) {
+				Cover = HitCover;
+				return true;
 			}
 		}
 	}

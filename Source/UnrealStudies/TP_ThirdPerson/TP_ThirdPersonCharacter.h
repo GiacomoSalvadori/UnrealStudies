@@ -131,6 +131,8 @@ private:
 
 	float FireTime;
 
+	float CheckCoverRadius;
+
 	bool bIsAiming;
 	
 	bool bCanTakeCover = false;
@@ -225,6 +227,8 @@ protected:
 	// Mechanic: Reload
 	void ReloadWeapon();
 
+	// 
+
 public:
 	
 	virtual void BeginPlay() override;
@@ -241,6 +245,9 @@ public:
 	/**Enables or disables the cover mode*/
 	void ToggleCover();
 
+	/** Force the cover exit */
+	void ExitFromCover();
+
 	UFUNCTION(BlueprintCallable, Category = "Reload")
 	void EndReload();
 
@@ -252,14 +259,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	void ThrowObject();
-
-	/** Trace line in front of Character */
-	AActor* TraceLineForward(float Distance);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	FThrowable GetEquipThrowable();
 
-	bool CheckAroundMe(float Radius, AActor* Looking);
+	bool CheckAroundMe(float Radius);
 
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	bool IsAimingWithWeapon();
@@ -275,10 +279,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TPS")
 	FWeaponSlot RetrieveActiveWeapon();
-
-	/** Inform the player that he's able to take cover in the provided actor */
-	void SetCanTakeCover(bool bCanTakeCover, ACoverActor* CoverActor);
-	
+		
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	FORCEINLINE class UHealthComponent* GetHealthComponent() const { return HealthComponent; }
 
