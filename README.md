@@ -28,6 +28,8 @@ An UE4 (version 4.24) project made for studying TPS mechanics. The project has o
 - **Shoot**: mouse left click || right trigger RT
 - **Cover**: C key || X button
 - **Reload**: R key || right shoulder RB
+- **Restart Level**: L key
+- **Quit Game**: escape
 
 ## Classes
 
