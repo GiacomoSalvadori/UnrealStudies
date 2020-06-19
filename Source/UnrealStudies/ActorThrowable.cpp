@@ -2,6 +2,7 @@
 
 #include "ActorThrowable.h"
 #include "HealthComponent.h"
+#include "Perception/AISenseConfig_Hearing.h"
 
 // Sets default values
 AActorThrowable::AActorThrowable()
@@ -44,6 +45,8 @@ void AActorThrowable::ManageLifeTime(float DeltaTime) {
 			FTransform HitEFXTransform = GetTransform();
 			HitEFXTransform.SetScale3D(FVector::OneVector * 5.0f);
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Params.HitEFX, HitEFXTransform);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), Params.SoundEFX, GetActorLocation());
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.0f, UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 			CheckActorInRadius();
 			Destroy();
 		}
