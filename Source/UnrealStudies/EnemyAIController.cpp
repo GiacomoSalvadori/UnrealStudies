@@ -43,16 +43,14 @@ void AEnemyAIController::BeginPlay() {
 		ControlledPawn->HealthComponent->OnHealtToZero.AddDynamic(this, &AEnemyAIController::StopAI);
 		// Detect player if hit by gun
 		ControlledPawn->HealthComponent->OnGetDamage.AddDynamic(this, &AEnemyAIController::DetectPlayer);
+		// Set the character's walk speed
 		GetBlackboardComponent()->SetValueAsFloat("OriginalWalkSpeed", ControlledPawn->GetCharacterMovement()->MaxWalkSpeed);
 	}
 	
+	// Add OnPerceptionUpdate_SenseManagement to the UE4's perception component
 	PerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AEnemyAIController::OnPerceptionUpdate_SenseManagement);
 }
 
-void AEnemyAIController::Tick(float DeltaTime) {
-	Super::Tick(DeltaTime);
-
-}
 
 void AEnemyAIController::StopAI() {
 	BrainComponent->StopLogic("Death");
@@ -76,12 +74,12 @@ void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*
 	for (auto& Actor : UpdateActors) {
 		ATP_ThirdPersonCharacter* PlayerCharacter = Cast<ATP_ThirdPersonCharacter>(Actor);
 		
-		if (PlayerCharacter) {
+		if (PlayerCharacter) { // If spotted the player character
 			const FActorPerceptionInfo* ActorInfo = PerceptionComponent->GetActorInfo(*Actor);
 			
 			FAISenseID SightID = SightConfig->GetSenseID();
 
-			if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) {
+			if (ActorInfo->LastSensedStimuli.IsValidIndex(SightID)) { // Was the sight stimuled?
 				if (ActorInfo->LastSensedStimuli[SightID].WasSuccessfullySensed()) {
 					ManageSight();
 				}
@@ -89,7 +87,7 @@ void AEnemyAIController::OnPerceptionUpdate_SenseManagement(const TArray<AActor*
 
 			FAISenseID HearingID = HearingConfig->GetSenseID();
 
-			if (ActorInfo->LastSensedStimuli.IsValidIndex(HearingID)) {
+			if (ActorInfo->LastSensedStimuli.IsValidIndex(HearingID)) { // Was the hearing stimuled?
 				if (ActorInfo->LastSensedStimuli[HearingID].WasSuccessfullySensed()) {
 					ManageHearing();
 				}

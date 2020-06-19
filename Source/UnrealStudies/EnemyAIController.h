@@ -23,12 +23,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI: behaviour tree")
 	UBehaviorTree* BehaviourTree;
-
-	virtual void Tick(float DeltaTime) override;
-
+	
+	/** Stop the AI job */
 	UFUNCTION()
 	void StopAI();
 
+	/** Called to manage the player detection */
 	UFUNCTION()
 	void DetectPlayer();
 
@@ -36,16 +36,20 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	/** This function handle all the senses.
+	  * Here are implemented all the function call to the ManageSense private functions
+	  */
 	UFUNCTION()
 	void OnPerceptionUpdate_SenseManagement(const TArray<AActor*>& UpdateActors);
 
 private:
 	UAISenseConfig_Sight* SightConfig;
-
 	UAISenseConfig_Hearing* HearingConfig;
 
+	/** Function used to manege the sight sense*/
 	void ManageSight();
 
+	/** Function used to manege the hearing sense*/
 	void ManageHearing();
 
 };
