@@ -13,7 +13,6 @@ class UNREALSTUDIES_API ACoverActor : public AActor
 	GENERATED_BODY()
 	
 private:
-//#include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 
 	UFUNCTION()
 	void OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -30,6 +29,7 @@ private:
 	/** Returns the name of the nearby socket */
 	FName GetNearbySocket();
 
+	/** Given a socket return the opposite one */
 	FName GetOppositeSocket(FName Socket);
 	
 protected:
@@ -42,18 +42,18 @@ public:
 	// Sets default values for this actor's properties
 	ACoverActor();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offset")
-	FVector BoxCompOffset = FVector(50.0f, 50.0f, 0.0f);
-
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Offset")
+	FVector BoxCompOffset = FVector(50.0f, 50.0f, 0.0f);
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
 	UStaticMeshComponent* SM;
 
 	/** Retrieves the movement direction and the facing rotation of the player */
 	void RetrieveMovementDirectionAndFacingRotation(FVector& MovementDirection, FRotator& FacingRotation);
 
+	/** Get the cover position better hidden from player*/
 	UFUNCTION(BlueprintCallable, Category = "Cover")
 	FVector GetPositionHiddenFromPlayer();
 

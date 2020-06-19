@@ -15,6 +15,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "TP_ThirdPersonCharacter.generated.h"
 
+/** Delegate used to notify character actions*/
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameStateCharacter);
 UCLASS(config=Game)
 class ATP_ThirdPersonCharacter : public ACharacter
@@ -40,7 +41,6 @@ class ATP_ThirdPersonCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
-
 
 public:
 	ATP_ThirdPersonCharacter();

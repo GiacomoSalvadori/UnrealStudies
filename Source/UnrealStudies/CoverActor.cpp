@@ -5,6 +5,41 @@
 #include "TP_ThirdPerson/TP_ThirdPersonCharacter.h"
 #include "Math/Vector.h"
 
+ACoverActor::ACoverActor() {
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
+	//Init. components
+	SM = CreateDefaultSubobject<UStaticMeshComponent>(FName("SM"));
+	BoxComp = CreateDefaultSubobject<UBoxComponent>(FName("BoxComp"));
+
+	SetRootComponent(SM);
+
+	BoxComp->SetupAttachment(SM);
+}
+
+void ACoverActor::BeginPlay() {
+	Super::BeginPlay();
+
+	if (BoxComp) {
+		//Register overlap events
+		BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACoverActor::OnCompBeginOverlap);
+		BoxComp->OnComponentEndOverlap.AddDynamic(this, &ACoverActor::OnCompEndOverlap);
+		FVector BoxExtent = BoxComp->GetScaledBoxExtent();
+
+		FVector ActorMeshScale = SM->GetComponentScale();
+		BoxExtent /= ActorMeshScale;
+		BoxExtent.X += BoxCompOffset.X / ActorMeshScale.X;
+		BoxExtent.Y += BoxCompOffset.Y / ActorMeshScale.Y;
+		BoxExtent.Z += BoxCompOffset.Z / ActorMeshScale.Z;
+
+		BoxComp->SetBoxExtent(BoxExtent);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Enable/Disable cover
+
 void ACoverActor::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->IsA<ATP_ThirdPersonCharacter>())
@@ -25,6 +60,9 @@ void ACoverActor::OnCompEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 		Char->SetCanTakeCover(false, nullptr);
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Enable/Disable cover
 
 float ACoverActor::DistanceFromPlayer(FName SocketName)
 {
@@ -53,7 +91,7 @@ FName ACoverActor::GetNearbySocket()
 		FName("LeftSocket_3")
 	};
 
-	FName NearestSocket = AvailableSockets[0];
+	FName NearestSocket = AvailableSockets[0]; // Get the first one if something goes wrong
 	
 	float MinDistance = INFINITY;
 	//Find the socket that is close to the character
@@ -65,7 +103,6 @@ FName ACoverActor::GetNearbySocket()
 		}
 	}
 
-	//If something goes terribly wrong we're going to get the forward wall
 	return NearestSocket;
 }
 
@@ -73,9 +110,7 @@ void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotato
 {
 	FName NearbySocket = GetNearbySocket();
 	
-	//Determine the movement and facing direction of the player, based on the described logic
-	//The way that we're deciding the facing direction is similar to the way we've decided
-	//the movement direction
+	//Determine the movement and facing direction of the player
 	FRotator FacingRot = GetActorRotation();
 
 	if (NearbySocket.IsEqual("ForwardSocket_1") || NearbySocket.IsEqual("ForwardSocket_2") || NearbySocket.IsEqual("ForwardSocket_3")) {
@@ -100,41 +135,6 @@ void ACoverActor::DetermineMovementDirection(FVector& MovementDirection, FRotato
 	}
 }
 
-// Sets default values
-ACoverActor::ACoverActor()
-{
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	//Init. components
-	SM = CreateDefaultSubobject<UStaticMeshComponent>(FName("SM"));
-	BoxComp = CreateDefaultSubobject<UBoxComponent>(FName("BoxComp"));
-
-	SetRootComponent(SM);
-
-	BoxComp->SetupAttachment(SM);
-}
-
-// Called when the game starts or when spawned
-void ACoverActor::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (BoxComp) {
-		//Register overlap events
-		BoxComp->OnComponentBeginOverlap.AddDynamic(this, &ACoverActor::OnCompBeginOverlap);
-		BoxComp->OnComponentEndOverlap.AddDynamic(this, &ACoverActor::OnCompEndOverlap);
-		FVector BoxExtent = BoxComp->GetScaledBoxExtent();
-		
-		FVector ActorMeshScale = SM->GetComponentScale();
-		BoxExtent /= ActorMeshScale;
-		BoxExtent.X += BoxCompOffset.X / ActorMeshScale.X;
-		BoxExtent.Y += BoxCompOffset.Y / ActorMeshScale.Y;
-		BoxExtent.Z += BoxCompOffset.Z / ActorMeshScale.Z;
-		
-		BoxComp->SetBoxExtent(BoxExtent);
-	}
-}
 
 void ACoverActor::RetrieveMovementDirectionAndFacingRotation(FVector& MovementDirection, FRotator& FacingRotation)
 {
